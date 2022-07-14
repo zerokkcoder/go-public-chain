@@ -25,6 +25,13 @@ func NewProofOfWork(block *Block) *ProofOfWork {
 	return &ProofOfWork{block, target}
 }
 
+// 判断 Hash 是否有效
+func (pow *ProofOfWork) IsValid() bool {
+	var hashInt big.Int
+	hashInt.SetBytes(pow.Block.Hash)
+	return pow.target.Cmp(&hashInt) == 1
+}
+
 func (pow ProofOfWork) Run() ([]byte, int64) {
 	// 1. 将 Block的属性拼接成字节数组
 	// 2. 生成 Hash
