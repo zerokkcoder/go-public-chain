@@ -11,3 +11,10 @@ func CreateBlockChainWithGenesisBlock() *BlockChain {
 	// 返回区块链对象
 	return &BlockChain{[]*Block{genesisBlock}}
 }
+
+// 2. 增加区块到区块链
+func (bc *BlockChain) AddBlockToBlockChain(data string, height int64, prevHash []byte) {
+	// 创建新区块
+	newBlock := NewBlock(data, height, prevHash)
+	bc.Blocks = append(bc.Blocks, newBlock)
+}
