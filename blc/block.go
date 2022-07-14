@@ -33,6 +33,11 @@ func NewBlock(data string, height int64, prevBlcokHash []byte) *Block {
 	return block
 }
 
+// 2. 生成创世区块
+func CreateGenesisBlock(data string) *Block {
+	return NewBlock(data, 1, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+}
+
 // SetHash 设置 Hash
 func (b *Block) SetHash() {
 	// 1. Height 转 []byte
