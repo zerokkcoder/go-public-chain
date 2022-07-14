@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	// block := blc.NewBlock("Genenis Block", 1, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
-	genesisBlock := blc.CreateGenesisBlock("Genenis Block")
-	fmt.Println(genesisBlock)
+	genesisBlockChain := blc.CreateBlockChainWithGenesisBlock()
+	fmt.Println(genesisBlockChain)
+	fmt.Println(genesisBlockChain.Blocks)
+	fmt.Println(genesisBlockChain.Blocks[0])
 }
