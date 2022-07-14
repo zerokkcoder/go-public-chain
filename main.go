@@ -12,9 +12,6 @@ func main() {
 	// 新区块
 	blockChain.AddBlockToBlockChain("Send 100Rmb To zhangshan", blockChain.Blocks[len(blockChain.Blocks)-1].Height+1, blockChain.Blocks[len(blockChain.Blocks)-1].Hash)
 	blockChain.AddBlockToBlockChain("Send 200Rmb To hah", blockChain.Blocks[len(blockChain.Blocks)-1].Height+1, blockChain.Blocks[len(blockChain.Blocks)-1].Hash)
-	blockChain.AddBlockToBlockChain("Send 400Rmb To zhdsngshan", blockChain.Blocks[len(blockChain.Blocks)-1].Height+1, blockChain.Blocks[len(blockChain.Blocks)-1].Hash)
-	blockChain.AddBlockToBlockChain("Send 400Rmb To sfgshan", blockChain.Blocks[len(blockChain.Blocks)-1].Height+1, blockChain.Blocks[len(blockChain.Blocks)-1].Hash)
-	blockChain.AddBlockToBlockChain("Send 300Rmb To sdfsangshan", blockChain.Blocks[len(blockChain.Blocks)-1].Height+1, blockChain.Blocks[len(blockChain.Blocks)-1].Hash)
 
 	fmt.Println(blockChain)
 	fmt.Println(blockChain.Blocks)
