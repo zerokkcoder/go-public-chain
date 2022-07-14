@@ -1,10 +1,6 @@
 package blc
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"go-public-chain/utils"
-	"strconv"
 	"time"
 )
 
@@ -14,6 +10,7 @@ type Block struct {
 	Data          []byte // 3. 交易数据
 	Timestamp     int64  // 4. 时间戳
 	Hash          []byte // 5. 当前区块的 HASH
+	Nonce         int64  // 6. Nonce值 用于工作量证明
 }
 
 // 1. 创建新的区块
@@ -25,10 +22,14 @@ func NewBlock(data string, height int64, prevBlcokHash []byte) *Block {
 		Data:          []byte(data),
 		Timestamp:     time.Now().Unix(),
 		Hash:          nil,
+		Nonce:         0,
 	}
+	// 调用工作量证明的方法并且返回有效的 Hash 和 Nonce 值
+	pow := NewProofOfWork(block)
+	hash, nonce := pow.Run()
 
-	// 设置 Hash
-	block.SetHash()
+	block.Hash = hash[:]
+	block.Nonce = nonce
 
 	return block
 }
@@ -36,18 +37,4 @@ func NewBlock(data string, height int64, prevBlcokHash []byte) *Block {
 // 2. 生成创世区块
 func CreateGenesisBlock(data string) *Block {
 	return NewBlock(data, 1, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
-}
-
-// SetHash 设置 Hash
-func (b *Block) SetHash() {
-	// 1. Height 转 []byte
-	heightBytes := utils.IntToHex(b.Height)
-	// 2. 时间戳 转 []byte
-	timeString := strconv.FormatInt(b.Timestamp, 2) // 转换成二进制数据
-	timeBytes := []byte(timeString)                 // 转换成 []byte
-	// 3. 拼接所有属性
-	blockBytes := bytes.Join([][]byte{heightBytes, b.PrevBlockHash, b.Data, timeBytes, b.Hash}, []byte{})
-	// 4. 生产 Hash
-	hash := sha256.Sum256(blockBytes)
-	b.Hash = hash[:]
 }
