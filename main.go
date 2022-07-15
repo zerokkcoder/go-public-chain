@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"os"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 
 	// // 遍历区块
 	// blockChain.PrintChain()
-	flagPrintChainCmd := flag.String("printchain", "", "输出所有区块")
-	flag.Parse()
-	fmt.Printf("%s\n", *flagPrintChainCmd)
+
+	args := os.Args
+	fmt.Printf("%v\n", args)
 }
