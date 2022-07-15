@@ -72,7 +72,7 @@ func (cli *CLI) printChain() {
 }
 
 func (cli *CLI) createGenesisBlockChain(data string) {
-	fmt.Println(data)
+	CreateBlockChainWithGenesisBlock(data)
 }
 
 func printUsage() {

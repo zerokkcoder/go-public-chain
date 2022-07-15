@@ -19,50 +19,31 @@ type BlockChain struct {
 }
 
 // 1. 创建带有创世区块的区块链
-func CreateBlockChainWithGenesisBlock() *BlockChain { // 创建或打开数据库
+func CreateBlockChainWithGenesisBlock(data string) {
+	// 判断数据库是否存在
 	if dbExists() {
-		fmt.Println("创世区块已经存在......")
-
-		db, err := bolt.Open(dbName, 0600, nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		var blockChain *BlockChain
-		err = db.View(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(blockTableName))
-			hash := b.Get([]byte("tip"))
-
-			blockChain = &BlockChain{hash, db}
-			return nil
-		})
-
-		if err != nil {
-			log.Panic(err)
-		}
-
-		return blockChain
+		fmt.Println("创世区块已经存在...")
+		os.Exit(1)
 	}
 
+	fmt.Println("正在创建创世区块.......")
+
+	// 创建或打开数据库
 	db, err := bolt.Open(dbName, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var blockHash []byte
-
 	err = db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blockTableName))
-		if b == nil {
-			b, err = tx.CreateBucket([]byte(blockTableName))
-			if err != nil {
-				log.Panic(err)
-			}
+
+		b, err := tx.CreateBucket([]byte(blockTableName))
+		if err != nil {
+			log.Panic(err)
 		}
 
 		if b != nil {
 			// 创建创世区块
-			genesisBlock := CreateGenesisBlock("Genesis data......")
+			genesisBlock := CreateGenesisBlock(data)
 			// 将创世区块存储到表中
 			err := b.Put(genesisBlock.Hash, genesisBlock.Serialize())
 			if err != nil {
@@ -73,7 +54,6 @@ func CreateBlockChainWithGenesisBlock() *BlockChain { // 创建或打开数据�
 			if err != nil {
 				log.Panic(err)
 			}
-			blockHash = genesisBlock.Hash
 		}
 
 		return nil
@@ -82,9 +62,6 @@ func CreateBlockChainWithGenesisBlock() *BlockChain { // 创建或打开数据�
 	if err != nil {
 		log.Panic(err)
 	}
-
-	// 返回区块链对象
-	return &BlockChain{blockHash, db}
 }
 
 // 2. 增加区块到区块链
