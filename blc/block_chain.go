@@ -17,36 +17,6 @@ type BlockChain struct {
 	DB  *bolt.DB // 数据库
 }
 
-// 迭代器结构体
-type BlockChainIterator struct {
-	CurrentHash []byte   // 当前hash
-	DB          *bolt.DB // 数据库
-}
-
-func (bci *BlockChainIterator) Next() *Block {
-	var block *Block
-	err := bci.DB.View(func(tx *bolt.Tx) error {
-		// 获取表
-		b := tx.Bucket([]byte(blockTableName))
-		if b != nil {
-			currentBlockBytes := b.Get(bci.CurrentHash)
-			block = DeserializeBlock(currentBlockBytes)
-			bci.CurrentHash = block.PrevBlockHash
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Panic(err)
-	}
-	return block
-}
-
-// 迭代器
-func (bc *BlockChain) Iterator() *BlockChainIterator {
-	return &BlockChainIterator{bc.Tip, bc.DB}
-}
-
 // 1. 创建带有创世区块的区块链
 func CreateBlockChainWithGenesisBlock() *BlockChain { // 创建或打开数据库
 	db, err := bolt.Open(dbName, 0600, nil)
@@ -123,6 +93,11 @@ func (bc *BlockChain) AddBlockToBlockChain(data string) {
 	if err != nil {
 		log.Panic(err)
 	}
+}
+
+// 迭代器
+func (bc *BlockChain) Iterator() *BlockChainIterator {
+	return &BlockChainIterator{bc.Tip, bc.DB}
 }
 
 // 遍历区块链
