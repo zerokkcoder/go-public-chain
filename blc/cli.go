@@ -47,7 +47,7 @@ func (cli *CLI) Run() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.addBlock(*flagAddBlockData)
+		cli.addBlock([]*Transaction{})
 	}
 
 	if printChainCmd.Parsed() {
@@ -59,18 +59,18 @@ func (cli *CLI) Run() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.createGenesisBlockChain(*flagCreateGenesisBlockData)
+		cli.createGenesisBlockChain([]*Transaction{})
 	}
 }
 
-func (cli *CLI) addBlock(data string) {
+func (cli *CLI) addBlock(txs []*Transaction) {
 	if !DBExists() {
 		fmt.Println("数据库不存在.......")
 		os.Exit(1)
 	}
 	blockChain := BlockChainObject()
 	defer blockChain.DB.Close()
-	blockChain.AddBlockToBlockChain(data)
+	blockChain.AddBlockToBlockChain(txs)
 }
 
 func (cli *CLI) printChain() {
@@ -83,8 +83,8 @@ func (cli *CLI) printChain() {
 	blockChain.PrintChain()
 }
 
-func (cli *CLI) createGenesisBlockChain(data string) {
-	CreateBlockChainWithGenesisBlock(data)
+func (cli *CLI) createGenesisBlockChain(txs []*Transaction) {
+	CreateBlockChainWithGenesisBlock(txs)
 }
 
 func printUsage() {
