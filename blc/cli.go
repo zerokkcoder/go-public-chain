@@ -64,11 +64,23 @@ func (cli *CLI) Run() {
 }
 
 func (cli *CLI) addBlock(data string) {
-	cli.BlockChain.AddBlockToBlockChain(data)
+	if !DBExists() {
+		fmt.Println("数据库不存在.......")
+		os.Exit(1)
+	}
+	blockChain := BlockChainObject()
+	defer blockChain.DB.Close()
+	blockChain.AddBlockToBlockChain(data)
 }
 
 func (cli *CLI) printChain() {
-	cli.BlockChain.PrintChain()
+	if !DBExists() {
+		fmt.Println("数据库不存在.......")
+		os.Exit(1)
+	}
+	blockChain := BlockChainObject()
+	defer blockChain.DB.Close()
+	blockChain.PrintChain()
 }
 
 func (cli *CLI) createGenesisBlockChain(data string) {
