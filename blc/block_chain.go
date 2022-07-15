@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -19,6 +20,30 @@ type BlockChain struct {
 
 // 1. 创建带有创世区块的区块链
 func CreateBlockChainWithGenesisBlock() *BlockChain { // 创建或打开数据库
+	if dbExists() {
+		fmt.Println("创世区块已经存在......")
+
+		db, err := bolt.Open(dbName, 0600, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var blockChain *BlockChain
+		err = db.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(blockTableName))
+			hash := b.Get([]byte("tip"))
+
+			blockChain = &BlockChain{hash, db}
+			return nil
+		})
+
+		if err != nil {
+			log.Panic(err)
+		}
+
+		return blockChain
+	}
+
 	db, err := bolt.Open(dbName, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -98,6 +123,14 @@ func (bc *BlockChain) AddBlockToBlockChain(data string) {
 // 迭代器
 func (bc *BlockChain) Iterator() *BlockChainIterator {
 	return &BlockChainIterator{bc.Tip, bc.DB}
+}
+
+// 判断数据库是否存在
+func dbExists() bool {
+	if _, err := os.Stat(dbName); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 // 遍历区块链
