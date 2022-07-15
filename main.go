@@ -5,12 +5,7 @@ import (
 )
 
 func main() {
-
-	// 创世区块
-	blockchain := blc.CreateBlockChainWithGenesisBlock()
-	defer blockchain.DB.Close()
-
-	cli := blc.CLI{BlockChain: blockchain}
+	cli := blc.CLI{}
 	cli.Run()
 
 }
