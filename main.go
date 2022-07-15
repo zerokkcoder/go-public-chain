@@ -16,20 +16,17 @@ func main() {
 
 	defer db.Close()
 
-	// 创建表
-	err = db.Update(func(tx *bolt.Tx) error {
-		// 创建BlockBucket表
-		b, err := tx.CreateBucket([]byte("BlockBucket"))
-		if err != nil {
-			return fmt.Errorf("create bucker: %s", err)
-		}
+	// 查看数据
+	err = db.View(func(tx *bolt.Tx) error {
+		// 获取BlockBucket表
+		b := tx.Bucket([]byte("BlockBucket"))
 
 		// 往表里面存储数据
 		if b != nil {
-			err := b.Put([]byte("l"), []byte("send 100 btc to shanshan...."))
-			if err != nil {
-				log.Panic("数据存储失败......")
-			}
+			data := b.Get([]byte("l"))
+			fmt.Printf("%s\n", data)
+			data = b.Get([]byte("lll"))
+			fmt.Printf("%s\n", data)
 		}
 
 		// 返回nil，以便数据库处理相应操作
