@@ -19,7 +19,7 @@ func (cli *CLI) Run() {
 	createGenesisBlockCmd := flag.NewFlagSet("creategenesisblock", flag.ExitOnError)
 
 	flagAddBlockData := addBlockCmd.String("data", "http://xxx.com", "交易数据")
-	flagCreateGenesisBlockData := createGenesisBlockCmd.String("data", "Genesis data ...", "创世区块数据")
+	flagCreateGenesisBlockAddress := createGenesisBlockCmd.String("address", "", "创建创世区块的地址")
 
 	switch os.Args[1] {
 	case "addblock":
@@ -55,11 +55,12 @@ func (cli *CLI) Run() {
 	}
 
 	if createGenesisBlockCmd.Parsed() {
-		if *flagCreateGenesisBlockData == "" {
+		if *flagCreateGenesisBlockAddress == "" {
+			fmt.Println("地址不能为空....")
 			printUsage()
 			os.Exit(1)
 		}
-		cli.createGenesisBlockChain([]*Transaction{})
+		cli.createGenesisBlockChain(*flagCreateGenesisBlockAddress)
 	}
 }
 
@@ -83,13 +84,13 @@ func (cli *CLI) printChain() {
 	blockChain.PrintChain()
 }
 
-func (cli *CLI) createGenesisBlockChain(txs []*Transaction) {
-	CreateBlockChainWithGenesisBlock(txs)
+func (cli *CLI) createGenesisBlockChain(address string) {
+	CreateBlockChainWithGenesisBlock(address)
 }
 
 func printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("\tcreategenesisblock -data DATA -- 创建创世区块")
+	fmt.Println("\tcreategenesisblock -address DATA -- 创建创世区块")
 	fmt.Println("\taddblock -data DATA -- 交易数据")
 	fmt.Println("\tprintchain -- 输出区块信息")
 }
