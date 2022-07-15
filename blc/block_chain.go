@@ -1,7 +1,9 @@
 package blc
 
 import (
+	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/boltdb/bolt"
 )
@@ -89,5 +91,43 @@ func (bc *BlockChain) AddBlockToBlockChain(data string) {
 
 	if err != nil {
 		log.Panic(err)
+	}
+}
+
+// 遍历区块链
+func (bc *BlockChain) PrintChain() {
+	var block *Block
+	var currentHash []byte = bc.Tip
+	for {
+		err := bc.DB.View(func(tx *bolt.Tx) error {
+			// 1. 获取表
+			b := tx.Bucket([]byte(blockTableName))
+			if b != nil {
+				blockBytes := b.Get(currentHash)
+				block = DeserializeBlock(blockBytes)
+
+				fmt.Printf("Height: %d\n", block.Height)
+				fmt.Printf("PrevBlockHash: %x\n", block.PrevBlockHash)
+				fmt.Printf("Data: %s\n", block.Data)
+				fmt.Printf("Timestamp: %d\n", block.Timestamp)
+				fmt.Printf("Hash: %x\n", block.Hash)
+				fmt.Printf("Nonce: %d\n", block.Nonce)
+
+			}
+			return nil
+		})
+
+		fmt.Println()
+
+		if err != nil {
+			log.Panic(err)
+		}
+
+		var hashInt big.Int
+		hashInt.SetBytes(block.PrevBlockHash)
+		if big.NewInt(0).Cmp(&hashInt) == 0 {
+			break
+		}
+		currentHash = block.PrevBlockHash
 	}
 }
