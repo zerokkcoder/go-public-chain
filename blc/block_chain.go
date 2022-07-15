@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -109,7 +110,7 @@ func (bc *BlockChain) PrintChain() {
 				fmt.Printf("Height: %d\n", block.Height)
 				fmt.Printf("PrevBlockHash: %x\n", block.PrevBlockHash)
 				fmt.Printf("Data: %s\n", block.Data)
-				fmt.Printf("Timestamp: %d\n", block.Timestamp)
+				fmt.Printf("Timestamp: %s\n", time.Unix(block.Timestamp, 0).Format("2006-01-02 15:04:05 PM"))
 				fmt.Printf("Hash: %x\n", block.Hash)
 				fmt.Printf("Nonce: %d\n", block.Nonce)
 
