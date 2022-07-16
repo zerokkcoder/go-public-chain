@@ -127,6 +127,19 @@ func (bc *BlockChain) UnUTXOs(address string) []*TXOutput {
 	return unUTXOs
 }
 
+// 查询余额
+func (bc *BlockChain) GetBalance(address string) int64 {
+	utxos := bc.UnUTXOs(address)
+
+	var amount int64
+
+	for _, out := range utxos {
+		amount += out.Value
+	}
+
+	return amount
+}
+
 // 挖掘新的区块
 func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
 	// $ go run .\main.go send -from '[\"huanggz\"]' -to '[\"lisi\"]' -amount '[\"6\"]'

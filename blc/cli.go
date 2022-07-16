@@ -115,14 +115,10 @@ func (cli *CLI) send(from []string, to []string, amount []string) {
 
 // 获取余额
 func (cli *CLI) getBalance(address string) {
-	fmt.Println("地址:" + address)
 	blockChain := BlockChainObject()
 	defer blockChain.DB.Close()
-	txOutputs := blockChain.UnUTXOs(address)
-	for _, out := range txOutputs {
-		fmt.Println(out)
-	}
-
+	balance := blockChain.GetBalance(address)
+	fmt.Printf("%s一共有%d个Token\n", address, balance)
 }
 
 func printUsage() {
