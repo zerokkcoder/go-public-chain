@@ -98,18 +98,24 @@ func (bc *BlockChain) UnUTXOs(address string) []*UXTO {
 				}
 			}
 			// Vouts
+		work:
 			for index, out := range tx.Vouts {
 				if out.UnLockScriptPubKeyWithAddress(address) {
 					if len(spentTXOutput) != 0 {
+
+						var isSpentUTXO bool
+
 						for txHash, indexArray := range spentTXOutput {
 							for _, i := range indexArray {
 								if index == i && txHash == hex.EncodeToString(tx.TxHash) {
-									continue
-								} else {
-									utxo := &UXTO{tx.TxHash, index, out}
-									unUTXOs = append(unUTXOs, utxo)
+									isSpentUTXO = true
+									continue work
 								}
 							}
+						}
+						if !isSpentUTXO {
+							utxo := &UXTO{tx.TxHash, index, out}
+							unUTXOs = append(unUTXOs, utxo)
 						}
 					} else {
 						utxo := &UXTO{tx.TxHash, index, out}
