@@ -73,6 +73,12 @@ func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 	return &BlockChain{genesisHash, db}
 }
 
+// 查找一个地址对应的TxOutput未花费的所有 Transaction
+func UnSpentTransactionWithAddress(address string) []*Transaction {
+
+	return nil
+}
+
 // 挖掘新的区块
 func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
 	// $ go run .\main.go send -from '[\"huanggz\"]' -to '[\"lisi\"]' -amount '[\"6\"]'
