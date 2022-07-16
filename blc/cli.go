@@ -100,12 +100,19 @@ func (cli *CLI) printChain() {
 
 // 创建创世区块
 func (cli *CLI) createGenesisBlockChain(address string) {
-	CreateBlockChainWithGenesisBlock(address)
+	blockChain := CreateBlockChainWithGenesisBlock(address)
+	defer blockChain.DB.Close()
 }
 
 // 转账
 func (cli *CLI) send(from []string, to []string, amount []string) {
-	MineNewBlock(from, to, amount)
+	if !DBExists() {
+		fmt.Println("数据库不存在.......")
+		os.Exit(1)
+	}
+	blockChain := BlockChainObject()
+	defer blockChain.DB.Close()
+	blockChain.MineNewBlock(from, to, amount)
 }
 
 func printUsage() {

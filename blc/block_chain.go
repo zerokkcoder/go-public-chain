@@ -19,7 +19,7 @@ type BlockChain struct {
 }
 
 // 1. 创建带有创世区块的区块链
-func CreateBlockChainWithGenesisBlock(address string) {
+func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 	// 判断数据库是否存在
 	if DBExists() {
 		fmt.Println("创世区块已经存在...")
@@ -33,6 +33,8 @@ func CreateBlockChainWithGenesisBlock(address string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var genesisHash []byte
 
 	err = db.Update(func(tx *bolt.Tx) error {
 
@@ -56,6 +58,8 @@ func CreateBlockChainWithGenesisBlock(address string) {
 			if err != nil {
 				log.Panic(err)
 			}
+
+			genesisHash = genesisBlock.Hash
 		}
 
 		return nil
@@ -64,16 +68,53 @@ func CreateBlockChainWithGenesisBlock(address string) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	return &BlockChain{genesisHash, db}
 }
 
 // 挖掘新的区块
-func MineNewBlock(from []string, to []string, amount []string) {
+func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
 	fmt.Println(from)
 	fmt.Println(to)
 	fmt.Println(amount)
 
-	// 1. 
+	// 1. 通过相关算法建立 Transaction 数组
+	var txs []*Transaction
 
+	// 2. 建立新的区块
+	// 获取最新区块 height 和 Hash
+	var block *Block
+	err := bc.DB.View(func(tx *bolt.Tx) error {
+		// 获取表
+		b := tx.Bucket([]byte(blockTableName))
+		if b != nil {
+			hash := b.Get([]byte("tip"))
+			blockBytes := b.Get(hash)
+			block = DeserializeBlock(blockBytes)
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	block = NewBlock(txs, block.Height+1, block.Hash)
+
+	// 3. 将新区块存储到数据库
+	err = bc.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blockTableName))
+		if b != nil {
+			b.Put(block.Hash, block.Serialize())
+			b.Put([]byte("tip"), block.Hash)
+			bc.Tip = block.Hash
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 // 2. 增加区块到区块链
