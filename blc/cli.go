@@ -14,16 +14,19 @@ type CLI struct {
 func (cli *CLI) Run() {
 	isValidArgs()
 
-	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
+	sendBlockCmd := flag.NewFlagSet("send", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createGenesisBlockCmd := flag.NewFlagSet("creategenesisblock", flag.ExitOnError)
 
-	flagAddBlockData := addBlockCmd.String("data", "http://xxx.com", "交易数据")
+	flagFrom := sendBlockCmd.String("from", "", "转账源地址...")
+	flagTo := sendBlockCmd.String("to", "", "转账目的地址...")
+	flagAmount := sendBlockCmd.String("amount", "", "转账金额址...")
+
 	flagCreateGenesisBlockAddress := createGenesisBlockCmd.String("address", "", "创建创世区块的地址")
 
 	switch os.Args[1] {
-	case "addblock":
-		err := addBlockCmd.Parse(os.Args[2:])
+	case "send":
+		err := sendBlockCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -42,12 +45,15 @@ func (cli *CLI) Run() {
 		os.Exit(1)
 	}
 
-	if addBlockCmd.Parsed() {
-		if *flagAddBlockData == "" {
+	if sendBlockCmd.Parsed() {
+		if *flagFrom == "" || *flagTo == "" || *flagAmount == "" {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.addBlock([]*Transaction{})
+		// cli.addBlock([]*Transaction{})
+		fmt.Println(*flagFrom)
+		fmt.Println(*flagTo)
+		fmt.Println(*flagAmount)
 	}
 
 	if printChainCmd.Parsed() {
@@ -91,7 +97,7 @@ func (cli *CLI) createGenesisBlockChain(address string) {
 func printUsage() {
 	fmt.Println("Usage:")
 	fmt.Println("\tcreategenesisblock -address DATA -- 创建创世区块")
-	fmt.Println("\taddblock -data DATA -- 交易数据")
+	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
 }
 
