@@ -44,7 +44,7 @@ func NewSimpleTransaction(from string, to string, amount int) *Transaction {
 	var txInputs []*TXInput
 	var txOutputs []*TXOutput
 	// 代表消费
-	bytes, _ := hex.DecodeString("98fbf08d8ba56fa3a319e60a51d02a92f78c7099a62377fdca62088d00c1c349")
+	bytes, _ := hex.DecodeString("6ac5992572bea4c3c49027bb97d3358a7f8440067b50396a66fe197d64b0a29c")
 	txInput := &TXInput{
 		TxHash:    bytes,
 		Vout:      0,
@@ -54,13 +54,13 @@ func NewSimpleTransaction(from string, to string, amount int) *Transaction {
 	txInputs = append(txInputs, txInput)
 	// 转账
 	txOutput := &TXOutput{
-		Value:        4,
+		Value:        int64(amount),
 		ScriptPubKey: to,
 	}
 	txOutputs = append(txOutputs, txOutput)
 	// 找零
 	txOutput = &TXOutput{
-		Value:        10 - 4,
+		Value:        4 - int64(amount),
 		ScriptPubKey: from,
 	}
 	txOutputs = append(txOutputs, txOutput)
