@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
-	"fmt"
 	"log"
 )
 
@@ -13,6 +12,11 @@ type Transaction struct {
 	TxHash []byte      // 1. 交易 hash
 	Vins   []*TXInput  // 2. 输入
 	Vouts  []*TXOutput // 3. 输出
+}
+
+// 判断交易是否是创世区块交易
+func (tx *Transaction) IsCoinbaseTransaction() bool {
+	return len(tx.Vins[0].TxHash) == 0 && tx.Vins[0].Vout == -1
 }
 
 // 1. 创世区块创建时的 Transaction
@@ -42,9 +46,9 @@ func NewCoinbaseTransaction(address string) *Transaction {
 // 2. 转账时产生的 Transaction
 func NewSimpleTransaction(from string, to string, amount int) *Transaction {
 	// 查找 from 这个地址所有未花费的 Transaction
-	unSpentTx := UnSpentTransactionWithAddress(from)
+	// unSpentTx := UnSpentTransactionWithAddress(from)
 
-	fmt.Println(unSpentTx)
+	// fmt.Println(unSpentTx)
 
 	// var txInputs []*TXInput
 	// var txOutputs []*TXOutput

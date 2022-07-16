@@ -116,9 +116,13 @@ func (cli *CLI) send(from []string, to []string, amount []string) {
 // 获取余额
 func (cli *CLI) getBalance(address string) {
 	fmt.Println("地址:" + address)
-	txs := UnSpentTransactionWithAddress(address)
+	blockChain := BlockChainObject()
+	defer blockChain.DB.Close()
+	txOutputs := blockChain.UnUTXOs(address)
+	for _, out := range txOutputs {
+		fmt.Println(out)
+	}
 
-	fmt.Println(txs)
 }
 
 func printUsage() {

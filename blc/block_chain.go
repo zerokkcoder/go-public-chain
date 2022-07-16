@@ -1,6 +1,7 @@
 package blc
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"math/big"
@@ -73,10 +74,57 @@ func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 	return &BlockChain{genesisHash, db}
 }
 
-// 查找一个地址对应的TxOutput未花费的所有 Transaction
-func UnSpentTransactionWithAddress(address string) []*Transaction {
+// 查找一个地址对应的TxOutput未花费的所有 TXOutput
+func (bc *BlockChain) UnUTXOs(address string) []*TXOutput {
 
-	return nil
+	var unUTXOs []*TXOutput
+
+	spentTXOutput := make(map[string][]int)
+
+	blockIterator := bc.Iterator()
+
+	for {
+		block := blockIterator.Next()
+
+		for _, tx := range block.Txs {
+			// txHash
+			// Vins
+			if !tx.IsCoinbaseTransaction() {
+				for _, in := range tx.Vins {
+					if in.UnLockWithAddress(address) {
+						key := hex.EncodeToString(in.TxHash)
+						spentTXOutput[key] = append(spentTXOutput[key], in.Vout)
+					}
+				}
+			}
+			// Vouts
+			for index, out := range tx.Vouts {
+				if out.UnLockScriptPubKeyWithAddress(address) {
+					if len(spentTXOutput) != 0 {
+						for txHash, indexArray := range spentTXOutput {
+							for _, i := range indexArray {
+								if index == i && txHash == hex.EncodeToString(tx.TxHash) {
+									continue
+								} else {
+									unUTXOs = append(unUTXOs, out)
+								}
+							}
+						}
+					} else {
+						unUTXOs = append(unUTXOs, out)
+					}
+				}
+			}
+		}
+
+		var hashInt big.Int
+		hashInt.SetBytes(block.PrevBlockHash)
+		if hashInt.Cmp(big.NewInt(0)) == 0 {
+			break
+		}
+	}
+
+	return unUTXOs
 }
 
 // 挖掘新的区块
