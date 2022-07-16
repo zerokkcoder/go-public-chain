@@ -143,9 +143,27 @@ func (bc *BlockChain) GetBalance(address string) int64 {
 }
 
 // 转账时查找可用的UTXO
-func (bc *BlockChain) FindSpendableUTXOs(from string, amount int) (int, map[string][]int) {
-	
-	return 0, nil
+func (bc *BlockChain) FindSpendableUTXOs(from string, amount int) (int64, map[string][]int) {
+	// 1. 先获取所有的 UTXO
+	utxos := bc.UnUTXOs(from)
+	// 2. 遍历 utxos
+	var value int64
+	var spendableUTXODic = make(map[string][]int)
+	for _, utxo := range utxos {
+		value += utxo.Output.Value
+
+		hash := hex.EncodeToString(utxo.TxHash)
+		spendableUTXODic[hash] = append(spendableUTXODic[hash], utxo.Index)
+
+		if value >= int64(amount) {
+			break
+		}
+	}
+
+	if value < int64(amount) {
+		fmt.Printf("%s's fund is 不足\n", from)
+	}
+	return value, spendableUTXODic
 }
 
 // 挖掘新的区块
