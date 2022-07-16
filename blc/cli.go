@@ -3,6 +3,7 @@ package blc
 import (
 	"flag"
 	"fmt"
+	"go-public-chain/utils"
 	"log"
 	"os"
 )
@@ -54,6 +55,10 @@ func (cli *CLI) Run() {
 		fmt.Println(*flagFrom)
 		fmt.Println(*flagTo)
 		fmt.Println(*flagAmount)
+
+		fmt.Println(utils.JSONToArray(*flagFrom))
+		fmt.Println(utils.JSONToArray(*flagTo))
+		fmt.Println(utils.JSONToArray(*flagAmount))
 	}
 
 	if printChainCmd.Parsed() {
