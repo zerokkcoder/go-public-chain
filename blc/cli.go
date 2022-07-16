@@ -12,6 +12,14 @@ type CLI struct {
 	BlockChain *BlockChain
 }
 
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
+	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
+	fmt.Println("\tprintchain -- 输出区块信息")
+	fmt.Println("\tgetbalance -address ADDRESS -- 获取账户余额")
+}
+
 func (cli *CLI) Run() {
 	isValidArgs()
 
@@ -83,50 +91,6 @@ func (cli *CLI) Run() {
 		}
 		cli.getBalance(*getBalanceWithAddress)
 	}
-}
-
-// 打印区块链
-func (cli *CLI) printChain() {
-	if !DBExists() {
-		fmt.Println("数据库不存在.......")
-		os.Exit(1)
-	}
-	blockChain := BlockChainObject()
-	defer blockChain.DB.Close()
-	blockChain.PrintChain()
-}
-
-// 创建创世区块
-func (cli *CLI) createGenesisBlockChain(address string) {
-	blockChain := CreateBlockChainWithGenesisBlock(address)
-	defer blockChain.DB.Close()
-}
-
-// 转账
-func (cli *CLI) send(from []string, to []string, amount []string) {
-	if !DBExists() {
-		fmt.Println("数据库不存在.......")
-		os.Exit(1)
-	}
-	blockChain := BlockChainObject()
-	defer blockChain.DB.Close()
-	blockChain.MineNewBlock(from, to, amount)
-}
-
-// 获取余额
-func (cli *CLI) getBalance(address string) {
-	blockChain := BlockChainObject()
-	defer blockChain.DB.Close()
-	balance := blockChain.GetBalance(address)
-	fmt.Printf("%s一共有%d个Token\n", address, balance)
-}
-
-func printUsage() {
-	fmt.Println("Usage:")
-	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
-	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
-	fmt.Println("\tprintchain -- 输出区块信息")
-	fmt.Println("\tgetbalance -address ADDRESS -- 获取账户余额")
 }
 
 func isValidArgs() {
