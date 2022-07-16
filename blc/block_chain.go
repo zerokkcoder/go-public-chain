@@ -75,9 +75,9 @@ func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 }
 
 // 查找一个地址对应的TxOutput未花费的所有 TXOutput
-func (bc *BlockChain) UnUTXOs(address string) []*TXOutput {
+func (bc *BlockChain) UnUTXOs(address string) []*UXTO {
 
-	var unUTXOs []*TXOutput
+	var unUTXOs []*UXTO
 
 	spentTXOutput := make(map[string][]int)
 
@@ -106,12 +106,14 @@ func (bc *BlockChain) UnUTXOs(address string) []*TXOutput {
 								if index == i && txHash == hex.EncodeToString(tx.TxHash) {
 									continue
 								} else {
-									unUTXOs = append(unUTXOs, out)
+									utxo := &UXTO{tx.TxHash, index, out}
+									unUTXOs = append(unUTXOs, utxo)
 								}
 							}
 						}
 					} else {
-						unUTXOs = append(unUTXOs, out)
+						utxo := &UXTO{tx.TxHash, index, out}
+						unUTXOs = append(unUTXOs, utxo)
 					}
 				}
 			}
@@ -133,8 +135,8 @@ func (bc *BlockChain) GetBalance(address string) int64 {
 
 	var amount int64
 
-	for _, out := range utxos {
-		amount += out.Value
+	for _, utxo := range utxos {
+		amount += utxo.Output.Value
 	}
 
 	return amount
