@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
+	"fmt"
 	"log"
 )
 
@@ -44,45 +46,50 @@ func NewCoinbaseTransaction(address string) *Transaction {
 }
 
 // 2. 转账时产生的 Transaction
-func NewSimpleTransaction(from string, to string, amount int) *Transaction {
-	// 查找 from 这个地址所有未花费的 Transaction
-	// unSpentTx := UnSpentTransactionWithAddress(from)
+func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockChain) *Transaction {
+	// 查找可用的UTXO
+	money, spendableUTXODic := blockChain.FindSpendableUTXOs(from, amount)
 
-	// fmt.Println(unSpentTx)
+	fmt.Println(money)
+	fmt.Println(spendableUTXODic)
 
-	// var txInputs []*TXInput
-	// var txOutputs []*TXOutput
-	// // 代表消费
-	// bytes, _ := hex.DecodeString("6ac5992572bea4c3c49027bb97d3358a7f8440067b50396a66fe197d64b0a29c")
-	// txInput := &TXInput{
-	// 	TxHash:    bytes,
-	// 	Vout:      0,
-	// 	ScriptSig: from,
-	// }
-	// // 消费
-	// txInputs = append(txInputs, txInput)
-	// // 转账
-	// txOutput := &TXOutput{
-	// 	Value:        int64(amount),
-	// 	ScriptPubKey: to,
-	// }
-	// txOutputs = append(txOutputs, txOutput)
-	// // 找零
-	// txOutput = &TXOutput{
-	// 	Value:        4 - int64(amount),
-	// 	ScriptPubKey: from,
-	// }
-	// txOutputs = append(txOutputs, txOutput)
+	var txInputs []*TXInput
+	var txOutputs []*TXOutput
+	// 消费
+	for txHash, indexArray := range spendableUTXODic {
+		txHashBytes, _ := hex.DecodeString(txHash)
+		for _, index := range indexArray {
+			txInput := &TXInput{
+				TxHash:    txHashBytes,
+				Vout:      index,
+				ScriptSig: from,
+			}
+			txInputs = append(txInputs, txInput)
+		}
+	}
 
-	// tx := &Transaction{
-	// 	TxHash: []byte{},
-	// 	Vins:   txInputs,
-	// 	Vouts:  txOutputs,
-	// }
-	// // 设置 TxHash 值
-	// tx.HashTransaction()
+	// 转账
+	txOutput := &TXOutput{
+		Value:        int64(amount),
+		ScriptPubKey: to,
+	}
+	txOutputs = append(txOutputs, txOutput)
+	// 找零
+	txOutput = &TXOutput{
+		Value:        int64(money) - int64(amount),
+		ScriptPubKey: from,
+	}
+	txOutputs = append(txOutputs, txOutput)
 
-	return nil
+	tx := &Transaction{
+		TxHash: []byte{},
+		Vins:   txInputs,
+		Vouts:  txOutputs,
+	}
+	// 设置 TxHash 值
+	tx.HashTransaction()
+
+	return tx
 }
 
 // 将交易结构体序列化成字节数组

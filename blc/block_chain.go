@@ -142,6 +142,12 @@ func (bc *BlockChain) GetBalance(address string) int64 {
 	return amount
 }
 
+// 转账时查找可用的UTXO
+func (bc *BlockChain) FindSpendableUTXOs(from string, amount int) (int, map[string][]int) {
+	
+	return 0, nil
+}
+
 // 挖掘新的区块
 func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
 	// $ go run .\main.go send -from '[\"huanggz\"]' -to '[\"lisi\"]' -amount '[\"6\"]'
@@ -151,7 +157,7 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 
 	// 建立一笔交易
 	amountInt, _ := strconv.Atoi(amount[0])
-	tx := NewSimpleTransaction(from[0], to[0], amountInt)
+	tx := NewSimpleTransaction(from[0], to[0], amountInt, bc)
 
 	fmt.Println(from)
 	fmt.Println(to)
