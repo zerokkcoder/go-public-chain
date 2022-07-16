@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"encoding/hex"
 	"log"
 )
 
@@ -39,6 +40,41 @@ func NewCoinbaseTransaction(address string) *Transaction {
 }
 
 // 2. 转账时产生的 Transaction
+func NewSimpleTransaction(from string, to string, amount int) *Transaction {
+	var txInputs []*TXInput
+	var txOutputs []*TXOutput
+	// 代表消费
+	bytes, _ := hex.DecodeString("98fbf08d8ba56fa3a319e60a51d02a92f78c7099a62377fdca62088d00c1c349")
+	txInput := &TXInput{
+		TxHash:    bytes,
+		Vout:      0,
+		ScriptSig: from,
+	}
+	// 消费
+	txInputs = append(txInputs, txInput)
+	// 转账
+	txOutput := &TXOutput{
+		Value:        4,
+		ScriptPubKey: to,
+	}
+	txOutputs = append(txOutputs, txOutput)
+	// 找零
+	txOutput = &TXOutput{
+		Value:        10 - 4,
+		ScriptPubKey: from,
+	}
+	txOutputs = append(txOutputs, txOutput)
+
+	tx := &Transaction{
+		TxHash: []byte{},
+		Vins:   txInputs,
+		Vouts:  txOutputs,
+	}
+	// 设置 TxHash 值
+	tx.HashTransaction()
+
+	return tx
+}
 
 // 将交易结构体序列化成字节数组
 func (tx *Transaction) HashTransaction() {

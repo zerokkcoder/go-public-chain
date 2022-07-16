@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -74,12 +75,22 @@ func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 
 // 挖掘新的区块
 func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
+	// $ go run .\main.go send -from '[\"huanggz\"]' -to '[\"lisi\"]' -amount '[\"6\"]'
+	// [huanggz]
+	// [lisi]
+	// [6]
+
+	// 建立一笔交易
+	amountInt, _ := strconv.Atoi(amount[0])
+	tx := NewSimpleTransaction(from[0], to[0], amountInt)
+
 	fmt.Println(from)
 	fmt.Println(to)
 	fmt.Println(amount)
 
 	// 1. 通过相关算法建立 Transaction 数组
 	var txs []*Transaction
+	txs = append(txs, tx)
 
 	// 2. 建立新的区块
 	// 获取最新区块 height 和 Hash

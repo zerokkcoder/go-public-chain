@@ -117,7 +117,7 @@ func (cli *CLI) send(from []string, to []string, amount []string) {
 
 func printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("\tcreategenesisblock -address DATA -- 创建创世区块")
+	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
 	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
 }
