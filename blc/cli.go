@@ -52,13 +52,15 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 		// cli.addBlock([]*Transaction{})
-		fmt.Println(*flagFrom)
-		fmt.Println(*flagTo)
-		fmt.Println(*flagAmount)
+		// fmt.Println(*flagFrom)
+		// fmt.Println(*flagTo)
+		// fmt.Println(*flagAmount)
 
-		fmt.Println(utils.JSONToArray(*flagFrom))
-		fmt.Println(utils.JSONToArray(*flagTo))
-		fmt.Println(utils.JSONToArray(*flagAmount))
+		// fmt.Println(utils.JSONToArray(*flagFrom))
+		// fmt.Println(utils.JSONToArray(*flagTo))
+		// fmt.Println(utils.JSONToArray(*flagAmount))
+
+		cli.send(utils.JSONToArray(*flagFrom), utils.JSONToArray(*flagTo), utils.JSONToArray(*flagAmount))
 	}
 
 	if printChainCmd.Parsed() {
@@ -85,6 +87,7 @@ func (cli *CLI) addBlock(txs []*Transaction) {
 	blockChain.AddBlockToBlockChain(txs)
 }
 
+// 打印区块链
 func (cli *CLI) printChain() {
 	if !DBExists() {
 		fmt.Println("数据库不存在.......")
@@ -95,8 +98,14 @@ func (cli *CLI) printChain() {
 	blockChain.PrintChain()
 }
 
+// 创建创世区块
 func (cli *CLI) createGenesisBlockChain(address string) {
 	CreateBlockChainWithGenesisBlock(address)
+}
+
+// 转账
+func (cli *CLI) send(from []string, to []string, amount []string) {
+	MineNewBlock(from, to, amount)
 }
 
 func printUsage() {

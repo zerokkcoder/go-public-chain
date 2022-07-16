@@ -66,6 +66,16 @@ func CreateBlockChainWithGenesisBlock(address string) {
 	}
 }
 
+// 挖掘新的区块
+func MineNewBlock(from []string, to []string, amount []string) {
+	fmt.Println(from)
+	fmt.Println(to)
+	fmt.Println(amount)
+
+	// 1. 
+
+}
+
 // 2. 增加区块到区块链
 func (bc *BlockChain) AddBlockToBlockChain(txs []*Transaction) {
 	err := bc.DB.Update(func(tx *bolt.Tx) error {
