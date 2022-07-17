@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-
-	"golang.org/x/crypto/ripemd160"
+	"go-public-chain/blc"
 )
 
 func main() {
@@ -20,10 +19,18 @@ func main() {
 
 	// ripemd160
 	// 4c7da9e96f8ec28020b68f6bfe6ffff8e63a3598
-	hasher := ripemd160.New()
-	hasher.Write([]byte("huanghuanghuang"))
-	hashBytes := hasher.Sum(nil)
-	hashString := fmt.Sprintf("%x", hashBytes)
-	fmt.Println(hashString)
+	// hasher := ripemd160.New()
+	// hasher.Write([]byte("huanghuanghuang"))
+	// hashBytes := hasher.Sum(nil)
+	// hashString := fmt.Sprintf("%x", hashBytes)
+	// fmt.Println(hashString)
 
+	// base58
+	bytes := []byte("huanghuanghuang")
+	encode := blc.Base58Encode(bytes)
+	fmt.Printf("%x\n", encode)
+	fmt.Printf("%s\n", encode)
+	decode := blc.Base58Decode(encode)
+	fmt.Printf("%x\n", decode)
+	fmt.Printf("%s\n", decode[1:])
 }
