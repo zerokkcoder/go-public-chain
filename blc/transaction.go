@@ -46,9 +46,9 @@ func NewCoinbaseTransaction(address string) *Transaction {
 }
 
 // 2. 转账时产生的 Transaction
-func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockChain) *Transaction {
+func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockChain, txs []*Transaction) *Transaction {
 	// 查找可用的UTXO
-	money, spendableUTXODic := blockChain.FindSpendableUTXOs(from, amount)
+	money, spendableUTXODic := blockChain.FindSpendableUTXOs(from, amount, txs)
 
 	fmt.Println(money)
 	fmt.Println(spendableUTXODic)
