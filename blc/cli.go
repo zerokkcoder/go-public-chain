@@ -14,6 +14,7 @@ type CLI struct {
 
 func printUsage() {
 	fmt.Println("Usage:")
+	fmt.Println("\tcreatewallet -- 创建钱包")
 	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
 	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
@@ -23,6 +24,7 @@ func printUsage() {
 func (cli *CLI) Run() {
 	isValidArgs()
 
+	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	sendBlockCmd := flag.NewFlagSet("send", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createGenesisBlockCmd := flag.NewFlagSet("creategenesisblock", flag.ExitOnError)
@@ -57,9 +59,19 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "createwallet":
+		err := createWalletCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		printUsage()
 		os.Exit(1)
+	}
+
+	if createWalletCmd.Parsed() {
+		// 创建钱包
+		cli.createWallet()
 	}
 
 	if sendBlockCmd.Parsed() {
@@ -67,7 +79,21 @@ func (cli *CLI) Run() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.send(utils.JSONToArray(*flagFrom), utils.JSONToArray(*flagTo), utils.JSONToArray(*flagAmount))
+
+		from := utils.JSONToArray(*flagFrom)
+		to := utils.JSONToArray(*flagTo)
+
+		for index, fromAddress := range from {
+			if !IsValidForAddress([]byte(fromAddress)) || !IsValidForAddress([]byte(to[index])) {
+				fmt.Println("地址无效....")
+				printUsage()
+				os.Exit(1)
+			}
+		}
+
+		amount := utils.JSONToArray(*flagAmount)
+
+		cli.send(from, to, amount)
 	}
 
 	if printChainCmd.Parsed() {
@@ -75,8 +101,8 @@ func (cli *CLI) Run() {
 	}
 
 	if createGenesisBlockCmd.Parsed() {
-		if *flagCreateGenesisBlockAddress == "" {
-			fmt.Println("地址不能为空....")
+		if !IsValidForAddress([]byte(*flagCreateGenesisBlockAddress)) {
+			fmt.Println("地址无效....")
 			printUsage()
 			os.Exit(1)
 		}
@@ -84,8 +110,8 @@ func (cli *CLI) Run() {
 	}
 
 	if getBalanceCmd.Parsed() {
-		if *getBalanceWithAddress == "" {
-			fmt.Println("地址不能为空....")
+		if !IsValidForAddress([]byte(*getBalanceWithAddress)) {
+			fmt.Println("地址无效....")
 			printUsage()
 			os.Exit(1)
 		}
