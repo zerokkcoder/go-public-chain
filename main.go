@@ -1,8 +1,8 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
-	"go-public-chain/blc"
 )
 
 func main() {
@@ -26,11 +26,24 @@ func main() {
 	// fmt.Println(hashString)
 
 	// base58
-	bytes := []byte("huanghuanghuang")
-	encode := blc.Base58Encode(bytes)
-	fmt.Printf("%x\n", encode)
-	fmt.Printf("%s\n", encode)
-	decode := blc.Base58Decode(encode)
-	fmt.Printf("%x\n", decode)
-	fmt.Printf("%s\n", decode[1:])
+	// bytes := []byte("huanghuanghuang")
+	// encode := blc.Base58Encode(bytes)
+	// fmt.Printf("%x\n", encode)
+	// fmt.Printf("%s\n", encode)
+	// decode := blc.Base58Decode(encode)
+	// fmt.Printf("%x\n", decode)
+	// fmt.Printf("%s\n", decode[1:])
+
+	// base64
+	msg := "Hello，世界"
+	encoded := base64.StdEncoding.EncodeToString([]byte(msg))
+	fmt.Println(encoded) // SGVsbG/vvIzkuJbnlYw=
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		fmt.Println("decode error:", err)
+		return
+	}
+	fmt.Println(string(decoded))
+
+	
 }
