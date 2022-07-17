@@ -152,9 +152,9 @@ func (bc *BlockChain) GetBalance(address string) int64 {
 func (bc *BlockChain) FindSpendableUTXOs(from string, amount int) (int64, map[string][]int) {
 	// 1. 先获取所有的 UTXO
 	utxos := bc.UnUTXOs(from)
+	var spendableUTXODic = make(map[string][]int)
 	// 2. 遍历 utxos
 	var value int64
-	var spendableUTXODic = make(map[string][]int)
 	for _, utxo := range utxos {
 		value += utxo.Output.Value
 
@@ -168,6 +168,7 @@ func (bc *BlockChain) FindSpendableUTXOs(from string, amount int) (int64, map[st
 
 	if value < int64(amount) {
 		fmt.Printf("%s's fund is 不足\n", from)
+		os.Exit(1)
 	}
 	return value, spendableUTXODic
 }
