@@ -4,8 +4,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/sha256"
 	"log"
+
+	"golang.org/x/crypto/ripemd160"
 )
+
+const version = byte(0x00)
+const addressChecksumLen = 4
 
 // Wallet 存储 private 和 public keys
 type Wallet struct {
@@ -36,6 +42,32 @@ func newKeyPair() (ecdsa.PrivateKey, []byte) {
 }
 
 // // 返回钱包地址
-// func (w Wallet) GetAddress() []byte {
-// 	pubKeyHash := HashPub
-// }
+func (w *Wallet) GetAddress() []byte {
+	// 1. hash160
+	ripemd160Hash := w.Ripemd160Hash(w.PublicKey)
+	versionRipemd160Hash := append([]byte{version}, ripemd160Hash...)
+	checkSumBytes := CheckSum(versionRipemd160Hash)
+	bytes := append(versionRipemd160Hash, checkSumBytes...)
+
+	return Base58Encode(bytes)
+}
+
+func (w *Wallet) Ripemd160Hash(publicKey []byte) []byte {
+	// 1. hash256
+	hash256 := sha256.New()
+	hash256.Write(publicKey)
+	hash := hash256.Sum(nil)
+	// 2. hash160
+	ripemd160Hash := ripemd160.New()
+	ripemd160Hash.Write(hash)
+
+	return ripemd160Hash.Sum(nil)
+}
+
+func CheckSum(payload []byte) []byte {
+	firstHash := sha256.Sum256(payload)
+	secondHash := sha256.Sum256(firstHash[:])
+	return secondHash[:addressChecksumLen]
+}
+
+
