@@ -1,6 +1,7 @@
 package blc
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -70,4 +71,16 @@ func CheckSum(payload []byte) []byte {
 	return secondHash[:addressChecksumLen]
 }
 
+// 判断一个钱包地址是否有效
+func (w *Wallet) IsValidForAddress(address []byte) bool {
+	versionPublicChecksumBytes := Base58Decode(address)
 
+	checkSumBytes := versionPublicChecksumBytes[len(versionPublicChecksumBytes)-addressChecksumLen:]
+	versionRipemd160 := versionPublicChecksumBytes[:len(versionPublicChecksumBytes)-addressChecksumLen]
+
+	checkBytes := CheckSum(versionRipemd160)
+	if bytes.Compare(checkSumBytes, checkBytes) == 0 {
+		return true
+	}
+	return false
+}
