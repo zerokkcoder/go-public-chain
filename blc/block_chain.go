@@ -124,7 +124,9 @@ func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UXTO {
 			if !tx.IsCoinbaseTransaction() {
 				for _, in := range tx.Vins {
 					// 判断是否解锁
-					if in.UnLockWithAddress(address) {
+					pubKeyHash := Base58Decode([]byte(address))
+					ripemd160Hash := pubKeyHash[1 : len(pubKeyHash)-4]
+					if in.UnLockRipemd160Hash(ripemd160Hash) {
 						key := hex.EncodeToString(in.TxHash)
 						spentTXOutputs[key] = append(spentTXOutputs[key], in.Vout)
 					}
@@ -321,12 +323,12 @@ func (bc *BlockChain) PrintChain() {
 			for _, in := range tx.Vins {
 				fmt.Printf("%x\n", in.TxHash)
 				fmt.Printf("%d\n", in.Vout)
-				fmt.Printf("%s\n", in.ScriptSig)
+				fmt.Printf("%v\n", in.PublicKey)
 			}
 			fmt.Println("Vouts:")
 			for _, out := range tx.Vouts {
 				fmt.Printf("%d\n", out.Value)
-				fmt.Printf("%s\n", out.ScriptPubKey)
+				fmt.Printf("%v\n", out.Ripemd160Hash)
 			}
 		}
 

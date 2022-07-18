@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
-	"fmt"
 	"log"
 )
 
@@ -27,13 +26,11 @@ func NewCoinbaseTransaction(address string) *Transaction {
 	txInput := &TXInput{
 		TxHash:    []byte{},
 		Vout:      -1,
-		ScriptSig: "Genesis Block ...",
+		Signature: nil,
+		PublicKey: []byte{},
 	}
 	// 代表输出
-	txOutput := &TXOutput{
-		Value:        10,
-		ScriptPubKey: address,
-	}
+	txOutput := NewTXOutput(10, address)
 	txCoinbase := &Transaction{
 		TxHash: []byte{},
 		Vins:   []*TXInput{txInput},
@@ -47,12 +44,12 @@ func NewCoinbaseTransaction(address string) *Transaction {
 
 // 2. 转账时产生的 Transaction
 func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockChain, txs []*Transaction) *Transaction {
+	// 获取钱包
+	wallets, _ := NewWallets()
+	wallet := wallets.GetWallet(from)
+
 	// 查找可用的UTXO
 	money, spendableUTXODic := blockChain.FindSpendableUTXOs(from, amount, txs)
-
-	fmt.Println(money)
-	fmt.Println(spendableUTXODic)
-
 	var txInputs []*TXInput
 	var txOutputs []*TXOutput
 	// 消费
@@ -62,23 +59,18 @@ func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockC
 			txInput := &TXInput{
 				TxHash:    txHashBytes,
 				Vout:      index,
-				ScriptSig: from,
+				Signature: nil,
+				PublicKey: wallet.PublicKey,
 			}
 			txInputs = append(txInputs, txInput)
 		}
 	}
 
 	// 转账
-	txOutput := &TXOutput{
-		Value:        int64(amount),
-		ScriptPubKey: to,
-	}
+	txOutput := NewTXOutput(int64(amount), to)
 	txOutputs = append(txOutputs, txOutput)
 	// 找零
-	txOutput = &TXOutput{
-		Value:        int64(money) - int64(amount),
-		ScriptPubKey: from,
-	}
+	txOutput = NewTXOutput(int64(money)-int64(amount), from)
 	txOutputs = append(txOutputs, txOutput)
 
 	tx := &Transaction{

@@ -40,7 +40,7 @@ func IsValidForAddress(address []byte) bool {
 func (w *Wallet) GetAddress() []byte {
 	// 1. hash160
 	// 20字节
-	ripemd160Hash := w.Ripemd160Hash(w.PublicKey)
+	ripemd160Hash := Ripemd160Hash(w.PublicKey)
 	// 21字节
 	version_ripemd160Hash := append([]byte{version}, ripemd160Hash...)
 	// 两次的256 hash
@@ -57,7 +57,7 @@ func CheckSum(payload []byte) []byte {
 	return hash2[:addressChecksumLen]
 }
 
-func (w *Wallet) Ripemd160Hash(publicKey []byte) []byte {
+func Ripemd160Hash(publicKey []byte) []byte {
 	//1. 256
 	hash256 := sha256.New()
 	hash256.Write(publicKey)
