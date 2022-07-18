@@ -2,7 +2,6 @@ package blc
 
 import (
 	"encoding/hex"
-	"fmt"
 	"log"
 
 	"github.com/boltdb/bolt"
@@ -50,7 +49,7 @@ func (us *UTXOSet) findUTXOForAddress(address string) []*UTXO {
 		b := tx.Bucket([]byte(utxoTableName))
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			fmt.Printf("key=%s, value=%v\n", k, v)
+			// fmt.Printf("key=%s, value=%v\n", k, v)
 			txOutputs := DeserializeTXOutputs(v)
 			for _, utxo := range txOutputs.UTXOs {
 				if utxo.Output.UnLockScriptPubKeyWithAddress(address) {
