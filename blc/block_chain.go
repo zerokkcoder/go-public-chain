@@ -1,6 +1,8 @@
 package blc
 
 import (
+	"bytes"
+	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -364,4 +366,44 @@ func BlockChainObject() *BlockChain {
 	}
 
 	return &BlockChain{tip, db}
+}
+
+func (bc *BlockChain) SignTransaction(tx *Transaction, privateKey ecdsa.PrivateKey) {
+	if tx.IsCoinbaseTransaction() {
+		return
+	}
+
+	prevTxs := make(map[string]Transaction)
+
+	for _, vin := range tx.Vins {
+		prevTX, err := bc.FindTransaction(vin.TxHash)
+		if err != nil {
+			log.Panic(err)
+		}
+		prevTxs[hex.EncodeToString(prevTX.TxHash)] = prevTX
+	}
+
+	tx.Sign(privateKey, prevTxs)
+}
+
+func (bc *BlockChain) FindTransaction(txHash []byte) (Transaction, error) {
+	bci := bc.Iterator()
+
+	for {
+		block := bci.Next()
+
+		for _, tx := range block.Txs {
+			if bytes.Equal(tx.TxHash, txHash) {
+				return *tx, nil
+			}
+		}
+		var hashInt big.Int
+		hashInt.SetBytes(block.PrevBlockHash)
+
+		if big.NewInt(0).Cmp(&hashInt) == 0 {
+			break
+		}
+	}
+
+	return Transaction{}, nil
 }

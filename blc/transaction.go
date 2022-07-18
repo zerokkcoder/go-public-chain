@@ -2,6 +2,8 @@ package blc
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
@@ -81,7 +83,93 @@ func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockC
 	// 设置 TxHash 值
 	tx.HashTransaction()
 
+	// 进行数字签名
+	blockChain.SignTransaction(tx, wallet.PrivateKey)
+
 	return tx
+}
+
+func (tx *Transaction) Serialize() []byte {
+	var encoded bytes.Buffer
+
+	encoder := gob.NewEncoder(&encoded)
+	err := encoder.Encode(tx)
+	if err != nil {
+		log.Panic(err)
+	}
+	return encoded.Bytes()
+
+}
+
+func (tx *Transaction) Hash() []byte {
+	var hash [32]byte
+
+	txCopy := *tx
+	txCopy.TxHash = []byte{}
+
+	hash = sha256.Sum256(txCopy.Serialize())
+
+	return hash[:]
+}
+
+// 签名
+func (tx *Transaction) Sign(privateKey ecdsa.PrivateKey, prevTxs map[string]Transaction) {
+	if tx.IsCoinbaseTransaction() {
+		return
+	}
+
+	for _, vin := range tx.Vins {
+		if prevTxs[hex.EncodeToString(vin.TxHash)].TxHash == nil {
+			log.Panic("ERROR:Previous transaction is not correct")
+		}
+	}
+
+	txCopy := tx.TrimmedCopy()
+
+	for inID, vin := range txCopy.Vins {
+		prevTx := prevTxs[hex.EncodeToString(vin.TxHash)]
+		txCopy.Vins[inID].Signature = nil
+		txCopy.Vins[inID].PublicKey = prevTx.Vouts[vin.Vout].Ripemd160Hash
+		txCopy.TxHash = txCopy.Hash()
+		txCopy.Vins[inID].PublicKey = nil
+
+		// 签名代码
+		r, s, err := ecdsa.Sign(rand.Reader, &privateKey, txCopy.TxHash)
+		if err != nil {
+			log.Panic(err)
+		}
+		signature := append(r.Bytes(), s.Bytes()...)
+		tx.Vins[inID].Signature = signature
+	}
+}
+
+// 拷贝一份新的 Transaction 用于签名
+func (tx *Transaction) TrimmedCopy() Transaction {
+	var inputs []*TXInput
+	var outputs []*TXOutput
+
+	for _, vin := range tx.Vins {
+		inputs = append(inputs, &TXInput{
+			TxHash:    vin.TxHash,
+			Vout:      vin.Vout,
+			Signature: vin.Signature,
+			PublicKey: vin.PublicKey,
+		})
+	}
+
+	for _, vout := range tx.Vouts {
+		outputs = append(outputs, &TXOutput{
+			Value:         vout.Value,
+			Ripemd160Hash: vout.Ripemd160Hash,
+		})
+	}
+
+	txCopy := Transaction{
+		TxHash: tx.TxHash,
+		Vins:   inputs,
+		Vouts:  outputs,
+	}
+	return txCopy
 }
 
 // 将交易结构体序列化成字节数组
