@@ -20,13 +20,60 @@ type Wallet struct {
 	PublicKey  []byte           // 2. 公钥
 }
 
+// 判断一个钱包地址是否有效
+func IsValidForAddress(address []byte) bool {
+	version_public_checksumBytes := Base58Decode(address)
+
+	//25
+	//4
+	//21
+	checkSumBytes := version_public_checksumBytes[len(version_public_checksumBytes)-addressChecksumLen:]
+
+	version_ripemd160 := version_public_checksumBytes[:len(version_public_checksumBytes)-addressChecksumLen]
+
+	checkBytes := CheckSum(version_ripemd160)
+
+	return bytes.Equal(checkSumBytes, checkBytes)
+}
+
+// 返回钱包地址
+func (w *Wallet) GetAddress() []byte {
+	// 1. hash160
+	// 20字节
+	ripemd160Hash := w.Ripemd160Hash(w.PublicKey)
+	// 21字节
+	version_ripemd160Hash := append([]byte{version}, ripemd160Hash...)
+	// 两次的256 hash
+	checkSumBytes := CheckSum(version_ripemd160Hash)
+	//25
+	bytes := append(version_ripemd160Hash, checkSumBytes...)
+
+	return Base58Encode(bytes)
+}
+
+func CheckSum(payload []byte) []byte {
+	hash1 := sha256.Sum256(payload)
+	hash2 := sha256.Sum256(hash1[:])
+	return hash2[:addressChecksumLen]
+}
+
+func (w *Wallet) Ripemd160Hash(publicKey []byte) []byte {
+	//1. 256
+	hash256 := sha256.New()
+	hash256.Write(publicKey)
+	hash := hash256.Sum(nil)
+
+	//2. 160
+	ripemd160 := ripemd160.New()
+	ripemd160.Write(hash)
+
+	return ripemd160.Sum(nil)
+}
+
 // 创建一个钱包
 func NewWallet() *Wallet {
 	privateKey, publicKey := newKeyPair()
-	return &Wallet{
-		PrivateKey: privateKey,
-		PublicKey:  publicKey,
-	}
+	return &Wallet{privateKey, publicKey}
 }
 
 // 通过私钥产生一个公钥
@@ -36,52 +83,8 @@ func newKeyPair() (ecdsa.PrivateKey, []byte) {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	pubKey := append(private.PublicKey.X.Bytes(), private.PublicKey.Y.Bytes()...)
 
 	return *private, pubKey
-}
-
-// // 返回钱包地址
-func (w *Wallet) GetAddress() []byte {
-	// 1. hash160
-	// 20字节
-	ripemd160Hash := w.Ripemd160Hash(w.PublicKey)
-	// 21字节
-	versionRipemd160Hash := append([]byte{version}, ripemd160Hash...)
-	// 两次的256 hash
-	checkSumBytes := CheckSum(versionRipemd160Hash)
-	//25
-	bytes := append(versionRipemd160Hash, checkSumBytes...)
-
-	return Base58Encode(bytes)
-}
-
-func (w *Wallet) Ripemd160Hash(publicKey []byte) []byte {
-	// 1. hash256
-	hash256 := sha256.New()
-	hash256.Write(publicKey)
-	hash := hash256.Sum(nil)
-	// 2. hash160
-	ripemd160 := ripemd160.New()
-	ripemd160.Write(hash)
-
-	return ripemd160.Sum(nil)
-}
-
-func CheckSum(payload []byte) []byte {
-	firstHash := sha256.Sum256(payload)
-	secondHash := sha256.Sum256(firstHash[:])
-	return secondHash[:addressChecksumLen]
-}
-
-// 判断一个钱包地址是否有效
-func IsValidForAddress(address []byte) bool {
-	versionPublicChecksumBytes := Base58Decode(address)
-
-	checkSumBytes := versionPublicChecksumBytes[len(versionPublicChecksumBytes)-addressChecksumLen:]
-	versionRipemd160 := versionPublicChecksumBytes[:len(versionPublicChecksumBytes)-addressChecksumLen]
-
-	checkBytes := CheckSum(versionRipemd160)
-
-	return bytes.Equal(checkSumBytes, checkBytes)
 }
