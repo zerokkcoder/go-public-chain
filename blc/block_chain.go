@@ -219,11 +219,15 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 	var txs []*Transaction
 	for index, address := range from {
 		amountInt, _ := strconv.Atoi(amount[index])
-		// 1. 通过相关算法建立 Transaction 数组
 		tx := NewSimpleTransaction(address, to[index], amountInt, bc, txs)
 		txs = append(txs, tx)
 	}
 
+	// 奖励
+	tx := NewCoinbaseTransaction(from[0])
+	txs = append(txs, tx)
+
+	// 1. 通过相关算法建立 Transaction 数组
 	var block *Block
 	err := bc.DB.View(func(tx *bolt.Tx) error {
 		// 获取表
