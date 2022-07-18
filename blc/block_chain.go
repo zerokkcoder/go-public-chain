@@ -433,3 +433,61 @@ func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
 
 	return tx.Verify(prevTxs)
 }
+
+func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {
+	bci := bc.Iterator()
+
+	// 存储已花费的UTXO
+	spendableUTXOsMap := make(map[string][]*TXInput)
+
+	utxoMaps := make(map[string]*TXOutputs)
+
+	for {
+		block := bci.Next()
+
+		for i := len(block.Txs) - 1; i >= 0; i-- {
+			txOutputs := &TXOutputs{[]*TXOutput{}}
+
+			tx := block.Txs[i]
+			if !tx.IsCoinbaseTransaction() {
+				for _, txInput := range tx.Vins {
+					txHash := hex.EncodeToString(txInput.TxHash)
+					spendableUTXOsMap[txHash] = append(spendableUTXOsMap[txHash], txInput)
+				}
+			}
+
+			txHash := hex.EncodeToString(tx.TxHash)
+		WorkOutLoop:
+			for index, out := range tx.Vouts {
+
+				txInputs := spendableUTXOsMap[txHash]
+				if len(txInputs) > 0 {
+
+					isSpent := false
+
+					for _, in := range txInputs {
+						outPublicKey := out.Ripemd160Hash
+						inPublicKey := in.PublicKey
+						if bytes.Equal(outPublicKey, Ripemd160Hash(inPublicKey)) {
+							if index == in.Vout {
+								isSpent = true
+								continue WorkOutLoop
+							}
+						}
+					}
+
+					if !isSpent {
+						txOutputs.TxOutputs = append(txOutputs.TxOutputs, out)
+					}
+				} else {
+					txOutputs.TxOutputs = append(txOutputs.TxOutputs, out)
+				}
+			}
+
+			// 设置键值对
+			utxoMaps[txHash] = txOutputs
+		}
+	}
+
+	return utxoMaps
+}
