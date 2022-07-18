@@ -20,6 +20,7 @@ func printUsage() {
 	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
 	fmt.Println("\tgetbalance -address ADDRESS -- 获取账户余额")
+	fmt.Println("\ttest -- 测试")
 }
 
 func (cli *CLI) Run() {
@@ -31,6 +32,7 @@ func (cli *CLI) Run() {
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createGenesisBlockCmd := flag.NewFlagSet("creategenesisblock", flag.ExitOnError)
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
+	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
 
 	flagFrom := sendBlockCmd.String("from", "", "转账源地址...")
 	flagTo := sendBlockCmd.String("to", "", "转账目的地址...")
@@ -68,6 +70,11 @@ func (cli *CLI) Run() {
 		}
 	case "addresslist":
 		err := addressListCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "test":
+		err := testCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -127,6 +134,9 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 		cli.getBalance(*getBalanceWithAddress)
+	}
+	if testCmd.Parsed() {
+		cli.TestMethod()
 	}
 }
 

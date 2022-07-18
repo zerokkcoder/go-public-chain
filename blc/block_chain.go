@@ -487,6 +487,13 @@ func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {
 			// 设置键值对
 			utxoMaps[txHash] = txOutputs
 		}
+
+		// 找到创世区块时退出
+		var hashInt big.Int
+		hashInt.SetBytes(block.PrevBlockHash)
+		if big.NewInt(0).Cmp(&hashInt) == 0 {
+			break
+		}
 	}
 
 	return utxoMaps

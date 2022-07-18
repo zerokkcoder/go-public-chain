@@ -22,7 +22,7 @@ func (us *UTXOSet) ResetUTXOSet() {
 			tx.DeleteBucket([]byte(utxoTableName))
 			b, _ := tx.CreateBucket([]byte(utxoTableName))
 			if b != nil {
-				txOutputsMap := us.BlockChain.FindUTXOMap()
+				// txOutputsMap := us.BlockChain.FindUTXOMap()
 			}
 		}
 		return nil
