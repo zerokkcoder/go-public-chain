@@ -2,6 +2,7 @@ package blc
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 
 	"github.com/boltdb/bolt"
@@ -44,7 +45,23 @@ func (us *UTXOSet) ResetUTXOSet() {
 }
 
 func (us *UTXOSet) findUTXOForAddress(address string) []*UTXO {
+	var utxos []*UTXO
+	us.BlockChain.DB.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(utxoTableName))
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			fmt.Printf("key=%s, value=%v\n", k, v)
+			txOutputs := DeserializeTXOutputs(v)
+			for _, utxo := range txOutputs.UTXOs {
+				if utxo.Output.UnLockScriptPubKeyWithAddress(address) {
+					utxos = append(utxos, utxo)
+				}
+			}
+		}
 
+		return nil
+	})
+	return utxos
 }
 
 // 查询余额
