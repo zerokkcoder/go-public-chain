@@ -1,8 +1,6 @@
 package main
 
-import (
-	"go-public-chain/blc"
-)
+import "go-public-chain/blc"
 
 func main() {
 	cli := blc.CLI{}

@@ -6,9 +6,8 @@ import (
 	"math/big"
 )
 
-// base58
-// ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
-// 0(零)，O(大写的 o)，I(大写的 i), l(小写的 L)，+，/
+//ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/
+//0(零)，O(大写的 o)，I(大写的i)，l(小写的 L)，+，/
 
 var b58Alphabet = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 

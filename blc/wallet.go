@@ -45,9 +45,13 @@ func newKeyPair() (ecdsa.PrivateKey, []byte) {
 // // 返回钱包地址
 func (w *Wallet) GetAddress() []byte {
 	// 1. hash160
+	// 20字节
 	ripemd160Hash := w.Ripemd160Hash(w.PublicKey)
+	// 21字节
 	versionRipemd160Hash := append([]byte{version}, ripemd160Hash...)
+	// 两次的256 hash
 	checkSumBytes := CheckSum(versionRipemd160Hash)
+	//25
 	bytes := append(versionRipemd160Hash, checkSumBytes...)
 
 	return Base58Encode(bytes)
@@ -59,10 +63,10 @@ func (w *Wallet) Ripemd160Hash(publicKey []byte) []byte {
 	hash256.Write(publicKey)
 	hash := hash256.Sum(nil)
 	// 2. hash160
-	ripemd160Hash := ripemd160.New()
-	ripemd160Hash.Write(hash)
+	ripemd160 := ripemd160.New()
+	ripemd160.Write(hash)
 
-	return ripemd160Hash.Sum(nil)
+	return ripemd160.Sum(nil)
 }
 
 func CheckSum(payload []byte) []byte {

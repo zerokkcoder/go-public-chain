@@ -14,6 +14,7 @@ type CLI struct {
 
 func printUsage() {
 	fmt.Println("Usage:")
+	fmt.Println("\taddresslist -- 输出所有钱包地址")
 	fmt.Println("\tcreatewallet -- 创建钱包")
 	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
 	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
@@ -24,6 +25,7 @@ func printUsage() {
 func (cli *CLI) Run() {
 	isValidArgs()
 
+	addressListCmd := flag.NewFlagSet("addresslist", flag.ExitOnError)
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	sendBlockCmd := flag.NewFlagSet("send", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
@@ -64,9 +66,18 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
+	case "addresslist":
+		err := addressListCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		printUsage()
 		os.Exit(1)
+	}
+	if addressListCmd.Parsed() {
+		// 输出所有钱包地址
+		cli.addressList()
 	}
 
 	if createWalletCmd.Parsed() {
