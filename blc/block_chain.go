@@ -215,11 +215,11 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 	// [lisi]
 	// [6]
 
-	// 建立交易
+	// 1. 建立一笔交易
 	var txs []*Transaction
 	for index, address := range from {
-		amountInt, _ := strconv.Atoi(amount[index])
-		tx := NewSimpleTransaction(address, to[index], amountInt, bc, txs)
+		value, _ := strconv.Atoi(amount[index])
+		tx := NewSimpleTransaction(address, to[index], value, bc, txs)
 		txs = append(txs, tx)
 	}
 
@@ -229,7 +229,7 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 
 	// 1. 通过相关算法建立 Transaction 数组
 	var block *Block
-	err := bc.DB.View(func(tx *bolt.Tx) error {
+	bc.DB.View(func(tx *bolt.Tx) error {
 		// 获取表
 		b := tx.Bucket([]byte(blockTableName))
 		if b != nil {
@@ -240,15 +240,15 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 
 		return nil
 	})
-	if err != nil {
-		log.Panic(err)
-	}
 
 	// 在建议新区块之前对 txs 进行签名验证
+	_txs := []*Transaction{}
 	for _, tx := range txs {
-		if !bc.VerifyTransaction(tx) {
-			log.Panic("签名验证失败...")
+		if !bc.VerifyTransaction(tx, _txs) {
+			log.Panic("ERROR: Invalid transaction")
 		}
+
+		_txs = append(_txs, tx)
 	}
 
 	// 2. 建立新的区块
@@ -256,7 +256,7 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 	block = NewBlock(txs, block.Height+1, block.Hash)
 
 	// 3. 将新区块存储到数据库
-	err = bc.DB.Update(func(tx *bolt.Tx) error {
+	bc.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blockTableName))
 		if b != nil {
 			b.Put(block.Hash, block.Serialize())
@@ -265,10 +265,6 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 		}
 		return nil
 	})
-
-	if err != nil {
-		log.Panic(err)
-	}
 }
 
 // 2. 增加区块到区块链
@@ -379,25 +375,31 @@ func BlockChainObject() *BlockChain {
 	return &BlockChain{tip, db}
 }
 
-func (bc *BlockChain) SignTransaction(tx *Transaction, privateKey ecdsa.PrivateKey) {
+func (bc *BlockChain) SignTransaction(tx *Transaction, privateKey ecdsa.PrivateKey, txs []*Transaction) {
 	if tx.IsCoinbaseTransaction() {
 		return
 	}
 
-	prevTxs := make(map[string]Transaction)
+	prevTXs := make(map[string]Transaction)
 
 	for _, vin := range tx.Vins {
-		prevTX, err := bc.FindTransaction(vin.TxHash)
+		prevTX, err := bc.FindTransaction(vin.TxHash, txs)
 		if err != nil {
 			log.Panic(err)
 		}
-		prevTxs[hex.EncodeToString(prevTX.TxHash)] = prevTX
+		prevTXs[hex.EncodeToString(prevTX.TxHash)] = prevTX
 	}
 
-	tx.Sign(privateKey, prevTxs)
+	tx.Sign(privateKey, prevTXs)
 }
 
-func (bc *BlockChain) FindTransaction(txHash []byte) (Transaction, error) {
+func (bc *BlockChain) FindTransaction(txHash []byte, txs []*Transaction) (Transaction, error) {
+	for _, tx := range txs {
+		if bytes.Compare(tx.TxHash, txHash) == 0 {
+			return *tx, nil
+		}
+	}
+
 	bci := bc.Iterator()
 
 	for {
@@ -420,18 +422,18 @@ func (bc *BlockChain) FindTransaction(txHash []byte) (Transaction, error) {
 }
 
 // 验证数字签名
-func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
-	prevTxs := make(map[string]Transaction)
+func (bc *BlockChain) VerifyTransaction(tx *Transaction, txs []*Transaction) bool {
+	prevTXs := make(map[string]Transaction)
 
 	for _, vin := range tx.Vins {
-		prevTx, err := bc.FindTransaction(vin.TxHash)
+		prevTx, err := bc.FindTransaction(vin.TxHash, txs)
 		if err != nil {
 			log.Panic(err)
 		}
-		prevTxs[hex.EncodeToString(prevTx.TxHash)] = prevTx
+		prevTXs[hex.EncodeToString(prevTx.TxHash)] = prevTx
 	}
 
-	return tx.Verify(prevTxs)
+	return tx.Verify(prevTXs)
 }
 
 func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {

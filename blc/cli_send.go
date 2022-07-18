@@ -13,5 +13,5 @@ func (cli *CLI) send(from []string, to []string, amount []string) {
 	}
 	blockChain := BlockChainObject()
 	defer blockChain.DB.Close()
-	blockChain.MineNewBlock(from, to, amount)
+	blockChain.MineNewBlock(from,to,amount)
 }
