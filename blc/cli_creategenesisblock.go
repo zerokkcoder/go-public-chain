@@ -4,4 +4,7 @@ package blc
 func (cli *CLI) createGenesisBlockChain(address string) {
 	blockChain := CreateBlockChainWithGenesisBlock(address)
 	defer blockChain.DB.Close()
+
+	utxoSet := &UTXOSet{blockChain}
+	utxoSet.ResetUTXOSet()
 }
