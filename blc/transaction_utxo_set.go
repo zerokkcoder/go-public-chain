@@ -42,3 +42,18 @@ func (us *UTXOSet) ResetUTXOSet() {
 		log.Panic(err)
 	}
 }
+
+func (us *UTXOSet) findUTXOForAddress(address string) []*UTXO {
+
+}
+
+// 查询余额
+func (us *UTXOSet) GetBalance(address string) int64 {
+	UTXOs := us.findUTXOForAddress(address)
+	var amount int64
+	for _, utxo := range UTXOs {
+		amount += utxo.Output.Value
+	}
+
+	return amount
+}

@@ -6,6 +6,9 @@ import "fmt"
 func (cli *CLI) getBalance(address string) {
 	blockChain := BlockChainObject()
 	defer blockChain.DB.Close()
-	balance := blockChain.GetBalance(address)
+
+	utxoSet := &UTXOSet{blockChain}
+
+	balance := utxoSet.GetBalance(address)
 	fmt.Printf("%s 一共有%d个Token\n", address, balance)
 }

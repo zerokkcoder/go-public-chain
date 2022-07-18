@@ -77,9 +77,9 @@ func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
 }
 
 // 查找一个地址对应的TxOutput未花费的所有 TXOutput
-func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UXTO {
+func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UTXO {
 
-	var unUTXOs []*UXTO
+	var unUTXOs []*UTXO
 
 	spentTXOutputs := make(map[string][]int)
 
@@ -101,13 +101,13 @@ func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UXTO {
 								}
 							}
 							if !isSpendUTXO {
-								utxo := &UXTO{tx.TxHash, index, out}
+								utxo := &UTXO{tx.TxHash, index, out}
 								unUTXOs = append(unUTXOs, utxo)
 							}
 						}
 					}
 				} else {
-					utxo := &UXTO{tx.TxHash, index, out}
+					utxo := &UTXO{tx.TxHash, index, out}
 					unUTXOs = append(unUTXOs, utxo)
 				}
 			}
@@ -149,11 +149,11 @@ func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UXTO {
 							}
 						}
 						if !isSpendUTXO {
-							utxo := &UXTO{tx.TxHash, index, out}
+							utxo := &UTXO{tx.TxHash, index, out}
 							unUTXOs = append(unUTXOs, utxo)
 						}
 					} else {
-						utxo := &UXTO{tx.TxHash, index, out}
+						utxo := &UTXO{tx.TxHash, index, out}
 						unUTXOs = append(unUTXOs, utxo)
 					}
 				}
@@ -448,7 +448,7 @@ func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {
 		block := bci.Next()
 
 		for i := len(block.Txs) - 1; i >= 0; i-- {
-			txOutputs := &TXOutputs{[]*TXOutput{}}
+			txOutputs := &TXOutputs{[]*UTXO{}}
 
 			tx := block.Txs[i]
 			if !tx.IsCoinbaseTransaction() {
@@ -479,10 +479,12 @@ func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {
 					}
 
 					if !isSpent {
-						txOutputs.TxOutputs = append(txOutputs.TxOutputs, out)
+						utxo := &UTXO{tx.TxHash, index, out}
+						txOutputs.UTXOs = append(txOutputs.UTXOs, utxo)
 					}
 				} else {
-					txOutputs.TxOutputs = append(txOutputs.TxOutputs, out)
+					utxo := &UTXO{tx.TxHash, index, out}
+					txOutputs.UTXOs = append(txOutputs.UTXOs, utxo)
 				}
 			}
 

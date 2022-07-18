@@ -1,6 +1,6 @@
 package blc
 
-type UXTO struct {
+type UTXO struct {
 	TxHash []byte
 	Index  int
 	Output *TXOutput

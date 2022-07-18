@@ -7,7 +7,7 @@ import (
 )
 
 type TXOutputs struct {
-	TxOutputs []*TXOutput
+	UTXOs []*UTXO
 }
 
 // 将TXOutputs序列化成字节数组
