@@ -31,7 +31,6 @@ func NewWallet() *Wallet {
 
 // 通过私钥产生一个公钥
 func newKeyPair() (ecdsa.PrivateKey, []byte) {
-	// 1.
 	curve := elliptic.P256()
 	private, err := ecdsa.GenerateKey(curve, rand.Reader)
 	if err != nil {
@@ -84,5 +83,5 @@ func IsValidForAddress(address []byte) bool {
 
 	checkBytes := CheckSum(versionRipemd160)
 
-	return bytes.Compare(checkSumBytes, checkBytes) == 0
+	return bytes.Equal(checkSumBytes, checkBytes)
 }
