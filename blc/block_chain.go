@@ -224,8 +224,6 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 		txs = append(txs, tx)
 	}
 
-	// 2. 建立新的区块
-	// 获取最新区块 height 和 Hash
 	var block *Block
 	err := bc.DB.View(func(tx *bolt.Tx) error {
 		// 获取表
@@ -242,6 +240,15 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 		log.Panic(err)
 	}
 
+	// 在建议新区块之前对 txs 进行签名验证
+	for _, tx := range txs {
+		if !bc.VerifyTransaction(tx) {
+			log.Panic("签名验证失败...")
+		}
+	}
+
+	// 2. 建立新的区块
+	// 获取最新区块 height 和 Hash
 	block = NewBlock(txs, block.Height+1, block.Hash)
 
 	// 3. 将新区块存储到数据库
@@ -406,4 +413,19 @@ func (bc *BlockChain) FindTransaction(txHash []byte) (Transaction, error) {
 	}
 
 	return Transaction{}, nil
+}
+
+// 验证数字签名
+func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
+	prevTxs := make(map[string]Transaction)
+
+	for _, vin := range tx.Vins {
+		prevTx, err := bc.FindTransaction(vin.TxHash)
+		if err != nil {
+			log.Panic(err)
+		}
+		prevTxs[hex.EncodeToString(prevTx.TxHash)] = prevTx
+	}
+
+	return tx.Verify(prevTxs)
 }
