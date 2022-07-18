@@ -332,12 +332,12 @@ func (bc *BlockChain) PrintChain() {
 			for _, in := range tx.Vins {
 				fmt.Printf("%x\n", in.TxHash)
 				fmt.Printf("%d\n", in.Vout)
-				fmt.Printf("%v\n", in.PublicKey)
+				fmt.Printf("%x\n", in.PublicKey)
 			}
 			fmt.Println("Vouts:")
 			for _, out := range tx.Vouts {
 				fmt.Printf("%d\n", out.Value)
-				fmt.Printf("%v\n", out.Ripemd160Hash)
+				fmt.Printf("%x\n", out.Ripemd160Hash)
 			}
 		}
 

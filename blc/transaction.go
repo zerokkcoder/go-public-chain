@@ -8,8 +8,10 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
+	"go-public-chain/utils"
 	"log"
 	"math/big"
+	"time"
 )
 
 // UXTO 交易模型
@@ -164,7 +166,8 @@ func (tx *Transaction) HashTransaction() {
 	if err != nil {
 		log.Panic(err)
 	}
-	hash := sha256.Sum256(result.Bytes())
+	resultBytes := bytes.Join([][]byte{utils.IntToHex(time.Now().Unix()), result.Bytes()}, []byte{})
+	hash := sha256.Sum256(resultBytes)
 	tx.TxHash = hash[:]
 }
 
