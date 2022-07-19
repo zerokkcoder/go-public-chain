@@ -17,7 +17,7 @@ func printUsage() {
 	fmt.Println("\taddresslist -- 输出所有钱包地址")
 	fmt.Println("\tcreatewallet -- 创建钱包")
 	fmt.Println("\tcreategenesisblock -address ADDRESS -- 创建创世区块")
-	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -- 交易明细")
+	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -mine -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
 	fmt.Println("\tgetbalance -address ADDRESS -- 获取账户余额")
 	fmt.Println("\ttest -- 测试")
@@ -26,8 +26,11 @@ func printUsage() {
 func (cli *CLI) Run() {
 	isValidArgs()
 
-	// 获取节点ID
-	nodeID := os.Getenv("NODE_ID")
+	// 设置ID
+	// export NODE_ID=3000
+	// 读取
+	//nodeID := os.Getenv("NODE_ID")
+	nodeID := "3000" // window 下使用固定
 	if nodeID == "" {
 		fmt.Printf("NODE_ID env. var is not set!\n")
 		os.Exit(1)
@@ -45,6 +48,7 @@ func (cli *CLI) Run() {
 	flagFrom := sendBlockCmd.String("from", "", "转账源地址...")
 	flagTo := sendBlockCmd.String("to", "", "转账目的地址...")
 	flagAmount := sendBlockCmd.String("amount", "", "转账金额址...")
+	flagMine := sendBlockCmd.Bool("mine", false, "是否在当前节点中立即验证....")
 
 	flagCreateGenesisBlockAddress := createGenesisBlockCmd.String("address", "", "创建创世区块的地址")
 
@@ -119,7 +123,7 @@ func (cli *CLI) Run() {
 
 		amount := utils.JSONToArray(*flagAmount)
 
-		cli.send(from, to, amount,nodeID)
+		cli.send(from, to, amount, nodeID, *flagMine)
 	}
 
 	if printChainCmd.Parsed() {
