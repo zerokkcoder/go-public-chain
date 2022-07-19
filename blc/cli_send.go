@@ -13,5 +13,9 @@ func (cli *CLI) send(from []string, to []string, amount []string) {
 	}
 	blockChain := BlockChainObject()
 	defer blockChain.DB.Close()
-	blockChain.MineNewBlock(from,to,amount)
+	blockChain.MineNewBlock(from, to, amount)
+
+	utxoSet := &UTXOSet{blockChain}
+	// 转账成功以后，更新未花费表
+	utxoSet.Update()
 }

@@ -1,6 +1,7 @@
 package blc
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -83,7 +84,7 @@ func (us *UTXOSet) FindUnPackageSpendableUTXOs(from string, txs []*Transaction) 
 	spentTXOutputs := make(map[string][]int)
 
 	for _, tx := range txs {
-		if tx.IsCoinbaseTransaction() == false {
+		if !tx.IsCoinbaseTransaction() {
 			for _, in := range tx.Vins {
 				//是否能够解锁
 				publicKeyHash := Base58Decode([]byte(from))
@@ -176,4 +177,80 @@ func (us *UTXOSet) FindSpendableUTXOs(from string, amount int64, txs []*Transact
 	}
 
 	return money, spentableUTXO
+}
+
+// 更新
+func (us *UTXOSet) Update() {
+	// blocks表，获取最新区块
+	block := us.BlockChain.Iterator().Next()
+	// utxos表，更新
+	ins := []*TXInput{}
+	outsMap := make(map[string]*TXOutputs)
+	// 找到需要删除的数据
+	for _, tx := range block.Txs {
+		ins = append(ins, tx.Vins...)
+	}
+	for _, tx := range block.Txs {
+		utxos := []*UTXO{}
+
+		for index, out := range tx.Vouts {
+			isSpent := false
+			for _, in := range ins {
+				if in.Vout == index && bytes.Equal(tx.TxHash, in.TxHash) && bytes.Equal(out.Ripemd160Hash, Ripemd160Hash(in.PublicKey)) {
+					isSpent = true
+					continue
+				}
+
+			}
+			if !isSpent {
+				utxos = append(utxos, &UTXO{tx.TxHash, index, out})
+			}
+		}
+
+		if len(utxos) > 0 {
+			txHash := hex.EncodeToString(tx.TxHash)
+			outsMap[txHash] = &TXOutputs{utxos}
+		}
+	}
+	err := us.BlockChain.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(utxoTableName))
+		if b != nil {
+			// 删除
+			for _, in := range ins {
+				txOutputsBytes := b.Get(in.TxHash)
+				if len(txOutputsBytes) == 0 {
+					continue
+				}
+				txOutputs := DeserializeTXOutputs(txOutputsBytes)
+				UTXOs := []*UTXO{}
+				// 判断是否需要删除
+				isNeedDelete := false
+				for _, utxo := range txOutputs.UTXOs {
+					if in.Vout == utxo.Index && bytes.Equal(utxo.Output.Ripemd160Hash, Ripemd160Hash(in.PublicKey)) {
+						isNeedDelete = true
+					} else {
+						UTXOs = append(UTXOs, utxo)
+					}
+				}
+				if isNeedDelete {
+					b.Delete(in.TxHash)
+					if len(UTXOs) > 0 {
+						preTXOutputs := outsMap[hex.EncodeToString(in.TxHash)]
+						preTXOutputs.UTXOs = append(preTXOutputs.UTXOs, UTXOs...)
+						outsMap[hex.EncodeToString(in.TxHash)] = preTXOutputs
+					}
+				}
+			}
+
+			// 更新
+			for keyHash, outPuts := range outsMap {
+				keyHashBytes, _ := hex.DecodeString(keyHash)
+				b.Put(keyHashBytes, outPuts.Serialize())
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
 }
