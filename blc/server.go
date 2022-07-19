@@ -3,6 +3,7 @@ package blc
 import (
 	"bytes"
 	"fmt"
+	"go-public-chain/utils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -26,12 +27,14 @@ func startServer(nodeID string, minerAdd string) {
 
 	defer conn.Close()
 
+	bc := BlockChainObject(nodeID)
+
 	// 第一个终端：端口为3000,启动的就是主节点
 	// 第二个终端：端口为3001，钱包节点
 	// 第三个终端：端口号为3002，矿工节点
 	if nodeAddress != knowNodes[0] {
 		// 此节点是钱包节点或者矿工节点，需要向主节点发送请求同步数据
-		sendMessage(knowNodes[0], nodeAddress)
+		sendVerson(knowNodes[0], bc)
 	}
 
 	for {
@@ -63,6 +66,32 @@ func sendMessage(to string, from string) {
 
 	// 附带要发送的数据
 	_, err = io.Copy(conn, bytes.NewReader([]byte(from)))
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
+func sendVerson(toAddress string, bc *BlockChain) {
+	
+	bestHeight := bc.GetBestHeight()
+	payload := utils.GobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
+
+	request := append(utils.CommandToBytes(VERSION), payload...)
+
+	sendData(toAddress, request)
+}
+
+func sendData(to string, data []byte) {
+
+	fmt.Println("客户端向服务器发送数据......")
+	conn, err := net.Dial("tcp", to)
+	if err != nil {
+		panic("error")
+	}
+	defer conn.Close()
+
+	// 附带要发送的数据
+	_, err = io.Copy(conn, bytes.NewReader(data))
 	if err != nil {
 		log.Panic(err)
 	}

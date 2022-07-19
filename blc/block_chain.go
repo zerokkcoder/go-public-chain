@@ -529,3 +529,8 @@ func (bc *BlockChain) FindUTXOMap() map[string]*TXOutputs {
 
 	return utxoMaps
 }
+
+func (bc *BlockChain) GetBestHeight() int64 {
+	block := bc.Iterator().Next()
+	return block.Height
+}
