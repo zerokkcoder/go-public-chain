@@ -9,14 +9,15 @@ import (
 	"net"
 )
 
-// localhost:3000 主节点地址
+//localhost:3000 主节点的地址
 var knowNodes = []string{"localhost:3000"}
+var nodeAddress string //全局变量，节点地址
 
 // 启动服务器
 func startServer(nodeID string, minerAdd string) {
 
 	// 当前节点的IP地址
-	nodeAddress := fmt.Sprintf("localhost:%s", nodeID)
+	nodeAddress = fmt.Sprintf("localhost:%s", nodeID)
 
 	conn, err := net.Listen(PROTOCOL, nodeAddress)
 	if err != nil {
@@ -24,6 +25,7 @@ func startServer(nodeID string, minerAdd string) {
 	}
 
 	defer conn.Close()
+
 	// 第一个终端：端口为3000,启动的就是主节点
 	// 第二个终端：端口为3001，钱包节点
 	// 第三个终端：端口号为3002，矿工节点
