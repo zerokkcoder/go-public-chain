@@ -26,6 +26,14 @@ func printUsage() {
 func (cli *CLI) Run() {
 	isValidArgs()
 
+	// 获取节点ID
+	nodeID := os.Getenv("NODE_ID")
+	if nodeID == "" {
+		fmt.Printf("NODE_ID env. var is not set!\n")
+		os.Exit(1)
+	}
+	fmt.Printf("NODE_ID: %s\n", nodeID)
+
 	addressListCmd := flag.NewFlagSet("addresslist", flag.ExitOnError)
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	sendBlockCmd := flag.NewFlagSet("send", flag.ExitOnError)
