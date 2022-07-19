@@ -3,7 +3,6 @@ package blc
 import (
 	"flag"
 	"fmt"
-	"go-public-chain/utils"
 	"log"
 	"os"
 )
@@ -118,8 +117,8 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 
-		from := utils.JSONToArray(*flagFrom)
-		to := utils.JSONToArray(*flagTo)
+		from := JSONToArray(*flagFrom)
+		to := JSONToArray(*flagTo)
 
 		for index, fromAddress := range from {
 			if !IsValidForAddress([]byte(fromAddress)) || !IsValidForAddress([]byte(to[index])) {
@@ -129,7 +128,7 @@ func (cli *CLI) Run() {
 			}
 		}
 
-		amount := utils.JSONToArray(*flagAmount)
+		amount := JSONToArray(*flagAmount)
 
 		cli.send(from, to, amount, nodeID, *flagMine)
 	}

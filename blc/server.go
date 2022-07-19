@@ -3,7 +3,6 @@ package blc
 import (
 	"bytes"
 	"fmt"
-	"go-public-chain/utils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -55,28 +54,12 @@ func startServer(nodeID string, minerAdd string) {
 	}
 }
 
-func sendMessage(to string, from string) {
-
-	fmt.Println("客户端向服务器发送数据......")
-	conn, err := net.Dial("tcp", to)
-	if err != nil {
-		panic("error")
-	}
-	defer conn.Close()
-
-	// 附带要发送的数据
-	_, err = io.Copy(conn, bytes.NewReader([]byte(from)))
-	if err != nil {
-		log.Panic(err)
-	}
-}
-
 func sendVerson(toAddress string, bc *BlockChain) {
-	
-	bestHeight := bc.GetBestHeight()
-	payload := utils.GobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
 
-	request := append(utils.CommandToBytes(VERSION), payload...)
+	bestHeight := bc.GetBestHeight()
+	payload := gobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
+
+	request := append(commandToBytes(VERSION), payload...)
 
 	sendData(toAddress, request)
 }

@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
-	"go-public-chain/utils"
 	"log"
 	"math/big"
 	"time"
@@ -166,7 +165,7 @@ func (tx *Transaction) HashTransaction() {
 	if err != nil {
 		log.Panic(err)
 	}
-	resultBytes := bytes.Join([][]byte{utils.IntToHex(time.Now().Unix()), result.Bytes()}, []byte{})
+	resultBytes := bytes.Join([][]byte{IntToHex(time.Now().Unix()), result.Bytes()}, []byte{})
 	hash := sha256.Sum256(resultBytes)
 	tx.TxHash = hash[:]
 }

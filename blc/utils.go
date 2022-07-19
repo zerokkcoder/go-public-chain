@@ -1,4 +1,4 @@
-package utils
+package blc
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"go-public-chain/blc"
 	"log"
 )
 
@@ -39,8 +38,8 @@ func ReverseBytes(data []byte) {
 }
 
 // version 转字节数组
-func CommandToBytes(command string) []byte {
-	var bytes [blc.COMMANDLENGTH]byte
+func commandToBytes(command string) []byte {
+	var bytes [COMMANDLENGTH]byte
 
 	for i, c := range command {
 		bytes[i] = byte(c)
@@ -50,7 +49,7 @@ func CommandToBytes(command string) []byte {
 }
 
 // 字节数组转version
-func BytesToCommand(bytes []byte) string {
+func bytesToCommand(bytes []byte) string {
 	var command []byte
 
 	for _, b := range bytes {
@@ -63,7 +62,7 @@ func BytesToCommand(bytes []byte) string {
 }
 
 // 将结构体序列化成字节数组
-func GobEncode(data interface{}) []byte {
+func gobEncode(data interface{}) []byte {
 	var buff bytes.Buffer
 
 	enc := gob.NewEncoder(&buff)

@@ -2,7 +2,6 @@ package blc
 
 import (
 	"bytes"
-	"go-public-chain/utils"
 	"math/big"
 )
 
@@ -26,7 +25,7 @@ func Base58Encode(input []byte) []byte {
 		result = append(result, b58Alphabet[mod.Int64()])
 	}
 
-	utils.ReverseBytes(result)
+	ReverseBytes(result)
 	for b := range input {
 		if b == 0x00 {
 			result = append([]byte{b58Alphabet[0]}, result...)

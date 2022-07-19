@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
-	"go-public-chain/utils"
 	"math/big"
 )
 
@@ -63,10 +62,10 @@ func (pow *ProofOfWork) prepareData(nonce int64) []byte {
 	data := bytes.Join([][]byte{
 		pow.Block.PrevBlockHash,
 		pow.Block.HashTransactions(),
-		utils.IntToHex(pow.Block.Timestamp),
-		utils.IntToHex(int64(targetBit)),
-		utils.IntToHex(int64(nonce)),
-		utils.IntToHex(int64(pow.Block.Height)),
+		IntToHex(pow.Block.Timestamp),
+		IntToHex(int64(targetBit)),
+		IntToHex(int64(nonce)),
+		IntToHex(int64(pow.Block.Height)),
 	}, []byte{})
 
 	return data
