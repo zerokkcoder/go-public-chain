@@ -20,7 +20,8 @@ func printUsage() {
 	fmt.Println("\tsend -from FROM -to TO -amount AMOUNT -mine -- 交易明细")
 	fmt.Println("\tprintchain -- 输出区块信息")
 	fmt.Println("\tgetbalance -address ADDRESS -- 获取账户余额")
-	fmt.Println("\ttest -- 测试")
+	fmt.Println("\tresetutxo -- 重置")
+	fmt.Println("\tstartnode -miner ADDRESS -- 启动节点服务器，并且指定挖矿奖励的地址.")
 }
 
 func (cli *CLI) Run() {
@@ -43,7 +44,8 @@ func (cli *CLI) Run() {
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createGenesisBlockCmd := flag.NewFlagSet("creategenesisblock", flag.ExitOnError)
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
-	testCmd := flag.NewFlagSet("test", flag.ExitOnError)
+	resetUtxoCmd := flag.NewFlagSet("resetutxo", flag.ExitOnError)
+	startNodeCmd := flag.NewFlagSet("startnode", flag.ExitOnError)
 
 	flagFrom := sendBlockCmd.String("from", "", "转账源地址...")
 	flagTo := sendBlockCmd.String("to", "", "转账目的地址...")
@@ -51,8 +53,9 @@ func (cli *CLI) Run() {
 	flagMine := sendBlockCmd.Bool("mine", false, "是否在当前节点中立即验证....")
 
 	flagCreateGenesisBlockAddress := createGenesisBlockCmd.String("address", "", "创建创世区块的地址")
-
 	getBalanceWithAddress := getBalanceCmd.String("address", "", "查询该地址的余额")
+
+	flagMiner := startNodeCmd.String("miner", "", "定义挖矿奖励的地址......")
 
 	switch os.Args[1] {
 	case "send":
@@ -85,8 +88,13 @@ func (cli *CLI) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
-	case "test":
-		err := testCmd.Parse(os.Args[2:])
+	case "resetutxo":
+		err := resetUtxoCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "startnode":
+		err := startNodeCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -147,8 +155,12 @@ func (cli *CLI) Run() {
 		}
 		cli.getBalance(*getBalanceWithAddress, nodeID)
 	}
-	if testCmd.Parsed() {
-		cli.TestMethod(nodeID)
+	if resetUtxoCmd.Parsed() {
+		fmt.Println("重置UTXO表单......")
+		cli.resetUTXOSet(nodeID)
+	}
+	if startNodeCmd.Parsed() {
+		cli.startNode(nodeID, *flagMiner)
 	}
 }
 
