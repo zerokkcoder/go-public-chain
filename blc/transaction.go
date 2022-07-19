@@ -49,13 +49,13 @@ func NewCoinbaseTransaction(address string) *Transaction {
 }
 
 // 2. 转账时产生的 Transaction
-func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockChain, txs []*Transaction) *Transaction {
+func NewSimpleTransaction(from string, to string, amount int64, utxoSet *UTXOSet, txs []*Transaction) *Transaction {
 	// 获取钱包
 	wallets, _ := NewWallets()
 	wallet := wallets.GetWallet(from)
 
 	// 查找可用的UTXO
-	money, spendableUTXODic := blockChain.FindSpendableUTXOs(from, amount, txs)
+	money, spendableUTXODic := utxoSet.FindSpendableUTXOs(from, amount, txs)
 	var txInputs []*TXInput
 	var txOutputs []*TXOutput
 	// 消费
@@ -79,7 +79,7 @@ func NewSimpleTransaction(from string, to string, amount int, blockChain *BlockC
 	tx.HashTransaction()
 
 	// 进行数字签名
-	blockChain.SignTransaction(tx, wallet.PrivateKey, txs)
+	utxoSet.BlockChain.SignTransaction(tx, wallet.PrivateKey, txs)
 
 	return tx
 }

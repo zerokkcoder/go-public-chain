@@ -84,6 +84,20 @@ func (bc *BlockChain) UnUTXOs(address string, txs []*Transaction) []*UTXO {
 	spentTXOutputs := make(map[string][]int)
 
 	for _, tx := range txs {
+		if tx.IsCoinbaseTransaction() == false {
+			for _, in := range tx.Vins {
+				//是否能够解锁
+				publicKeyHash := Base58Decode([]byte(address))
+				ripemd160Hash := publicKeyHash[1 : len(publicKeyHash)-4]
+				if in.UnLockRipemd160Hash(ripemd160Hash) {
+					key := hex.EncodeToString(in.TxHash)
+					spentTXOutputs[key] = append(spentTXOutputs[key], in.Vout)
+				}
+			}
+		}
+	}
+
+	for _, tx := range txs {
 
 		// Vouts
 	work1:
@@ -216,10 +230,11 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 	// [6]
 
 	// 1. 建立一笔交易
+	utxoSet := &UTXOSet{bc}
 	var txs []*Transaction
 	for index, address := range from {
 		value, _ := strconv.Atoi(amount[index])
-		tx := NewSimpleTransaction(address, to[index], value, bc, txs)
+		tx := NewSimpleTransaction(address, to[index], int64(value), utxoSet, txs)
 		txs = append(txs, tx)
 	}
 
