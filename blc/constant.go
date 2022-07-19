@@ -12,3 +12,7 @@ const COMMAND_INV = "inv"
 const COMMAND_GETBLOCKS = "getblocks"
 const COMMAND_GETDATA = "getdata"
 const COMMAND_TX = "tx"
+
+// 类型
+const BLOCK_TYPE = "block"
+const TX_TYPE = "tx"

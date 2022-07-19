@@ -32,7 +32,7 @@ func handleVersion(request []byte, bc *BlockChain) {
 		sendVersion(payload.AddrFrom, bc)
 	} else if bestHeight < foreignerBestHeight {
 		// 去向主节点要信息
-		//sendGetBlocks(payload.AddrFrom)
+		sendGetBlocks(payload.AddrFrom)
 	}
 }
 
@@ -43,15 +43,79 @@ func handleBlock(request []byte, bc *BlockChain) {
 
 }
 func handleGetblocks(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload GetBlocks
 
+	dataBytes := request[COMMANDLENGTH:]
+
+	// 反序列化
+	buff.Write(dataBytes)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	blocks := bc.GetBlockHashes()
+
+	sendInv(payload.AddrFrom, BLOCK_TYPE, blocks)
 }
 func handleGetData(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload GetData
 
+	dataBytes := request[COMMANDLENGTH:]
+
+	// 反序列化
+	buff.Write(dataBytes)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if payload.Type == BLOCK_TYPE {
+
+		block, err := bc.GetBlock([]byte(payload.Hash))
+		if err != nil {
+			return
+		}
+
+		sendBlock(payload.AddrFrom, block)
+	}
+
+	if payload.Type == "tx" {
+
+	}
 }
 func handleInv(request []byte, bc *BlockChain) {
 
 }
 
 func handleTx(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload Inv
 
+	dataBytes := request[COMMANDLENGTH:]
+
+	// 反序列化
+	buff.Write(dataBytes)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// Ivn 3000 block hashes [][]
+
+	if payload.Type == BLOCK_TYPE {
+
+		blockHash := payload.Items[0]
+		sendGetData(payload.AddrFrom, BLOCK_TYPE, blockHash)
+
+	}
+
+	if payload.Type == TX_TYPE {
+
+	}
 }

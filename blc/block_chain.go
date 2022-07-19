@@ -534,3 +534,47 @@ func (bc *BlockChain) GetBestHeight() int64 {
 	block := bc.Iterator().Next()
 	return block.Height
 }
+
+func (bc *BlockChain) GetBlockHashes() [][]byte {
+
+	blockIterator := bc.Iterator()
+
+	var blockHashs [][]byte
+
+	for {
+		block := blockIterator.Next()
+
+		blockHashs = append(blockHashs, block.Hash)
+
+		var hashInt big.Int
+		hashInt.SetBytes(block.PrevBlockHash)
+
+		if hashInt.Cmp(big.NewInt(0)) == 0 {
+			break
+		}
+	}
+
+	return blockHashs
+}
+
+func (bc *BlockChain) GetBlock(blockHash []byte) (*Block, error) {
+
+	var block *Block
+
+	err := bc.DB.View(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte(blockTableName))
+
+		if b != nil {
+
+			blockBytes := b.Get(blockHash)
+
+			block = DeserializeBlock(blockBytes)
+
+		}
+
+		return nil
+	})
+
+	return block, err
+}
