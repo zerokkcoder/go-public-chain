@@ -3,10 +3,7 @@ package blc
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
-	"io"
 	"log"
-	"net"
 )
 
 func handleVersion(request []byte, bc *BlockChain) {
@@ -57,30 +54,4 @@ func handleInv(request []byte, bc *BlockChain) {
 
 func handleTx(request []byte, bc *BlockChain) {
 
-}
-
-func sendVersion(toAddress string, bc *BlockChain) {
-
-	bestHeight := bc.GetBestHeight()
-	payload := gobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
-
-	request := append(commandToBytes(COMMAND_VERSION), payload...)
-
-	sendData(toAddress, request)
-}
-
-func sendData(to string, data []byte) {
-
-	fmt.Println("客户端向服务器发送数据......")
-	conn, err := net.Dial("tcp", to)
-	if err != nil {
-		panic("error")
-	}
-	defer conn.Close()
-
-	// 附带要发送的数据
-	_, err = io.Copy(conn, bytes.NewReader(data))
-	if err != nil {
-		log.Panic(err)
-	}
 }
