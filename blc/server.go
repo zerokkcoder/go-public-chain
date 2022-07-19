@@ -1,9 +1,7 @@
 package blc
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -33,7 +31,7 @@ func startServer(nodeID string, minerAdd string) {
 	// 第三个终端：端口号为3002，矿工节点
 	if nodeAddress != knowNodes[0] {
 		// 此节点是钱包节点或者矿工节点，需要向主节点发送请求同步数据
-		sendVerson(knowNodes[0], bc)
+		sendVersion(knowNodes[0], bc)
 	}
 
 	for {
@@ -79,54 +77,4 @@ func handleConnection(conn net.Conn, bc *BlockChain) {
 	}
 
 	defer conn.Close()
-}
-
-func handleVersion(request []byte, bc *BlockChain) {
-
-}
-
-func handleAddr(request []byte, bc *BlockChain) {
-
-}
-func handleBlock(request []byte, bc *BlockChain) {
-
-}
-func handleGetblocks(request []byte, bc *BlockChain) {
-
-}
-func handleGetData(request []byte, bc *BlockChain) {
-
-}
-func handleInv(request []byte, bc *BlockChain) {
-
-}
-
-func handleTx(request []byte, bc *BlockChain) {
-
-}
-
-func sendVerson(toAddress string, bc *BlockChain) {
-
-	bestHeight := bc.GetBestHeight()
-	payload := gobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
-
-	request := append(commandToBytes(COMMAND_VERSION), payload...)
-
-	sendData(toAddress, request)
-}
-
-func sendData(to string, data []byte) {
-
-	fmt.Println("客户端向服务器发送数据......")
-	conn, err := net.Dial("tcp", to)
-	if err != nil {
-		panic("error")
-	}
-	defer conn.Close()
-
-	// 附带要发送的数据
-	_, err = io.Copy(conn, bytes.NewReader(data))
-	if err != nil {
-		log.Panic(err)
-	}
 }
