@@ -44,14 +44,65 @@ func startServer(nodeID string, minerAdd string) {
 			log.Panic(err)
 		}
 
-		// 读取客户端发送过来的所有的数据
-		request, err := ioutil.ReadAll(conn)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		fmt.Printf("Receive a Message:%s\n", request)
+		go handleConnection(conn, bc)
 	}
+}
+
+func handleConnection(conn net.Conn, bc *BlockChain) {
+	// 读取客户端发送过来的所有的数据
+	request, err := ioutil.ReadAll(conn)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Printf("Receive a Message:%s\n", request[:COMMANDLENGTH])
+
+	command := bytesToCommand(request[:COMMANDLENGTH])
+
+	switch command {
+	case COMMAND_VERSION:
+		handleVersion(request, bc)
+	case COMMAND_ADDR:
+		handleAddr(request, bc)
+	case COMMAND_BLOCK:
+		handleBlock(request, bc)
+	case COMMAND_GETBLOCKS:
+		handleGetblocks(request, bc)
+	case COMMAND_GETDATA:
+		handleGetData(request, bc)
+	case COMMAND_INV:
+		handleInv(request, bc)
+	case COMMAND_TX:
+		handleTx(request, bc)
+	default:
+		fmt.Println("Unknown command!")
+	}
+
+	defer conn.Close()
+}
+
+func handleVersion(request []byte, bc *BlockChain) {
+
+}
+
+func handleAddr(request []byte, bc *BlockChain) {
+
+}
+func handleBlock(request []byte, bc *BlockChain) {
+
+}
+func handleGetblocks(request []byte, bc *BlockChain) {
+
+}
+func handleGetData(request []byte, bc *BlockChain) {
+
+}
+func handleInv(request []byte, bc *BlockChain) {
+
+}
+
+func handleTx(request []byte, bc *BlockChain) {
+
 }
 
 func sendVerson(toAddress string, bc *BlockChain) {
@@ -59,7 +110,7 @@ func sendVerson(toAddress string, bc *BlockChain) {
 	bestHeight := bc.GetBestHeight()
 	payload := gobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
 
-	request := append(commandToBytes(VERSION), payload...)
+	request := append(commandToBytes(COMMAND_VERSION), payload...)
 
 	sendData(toAddress, request)
 }
