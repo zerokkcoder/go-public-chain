@@ -1,0 +1,12 @@
+主节点：
+wallets_3000.dat
+blockchain_3000.db
+1L4eANremGtAZ8JdZ1joJznmgDLz1ecew8 10
+
+钱包节点
+blockchain_3001.db
+wallets_3001.dat
+126PyVBxg13S42cqUb3BrXXqmH3G1trrud 8
+1LqrisDRNU6i4RBmm5xoN4MbppHv3DKpLr 6
+1LmWk3y2ewuMomEc7uTiHJvEo9By493SUn
+1NUKu7ze99hdx9xkjBPEk54fb1EdXu2sij

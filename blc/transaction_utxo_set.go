@@ -181,14 +181,16 @@ func (us *UTXOSet) FindSpendableUTXOs(from string, amount int64, txs []*Transact
 
 // 更新
 func (us *UTXOSet) Update() {
-	// blocks表，获取最新区块
+	// 最新的Block
 	block := us.BlockChain.Iterator().Next()
 	// utxos表，更新
 	ins := []*TXInput{}
 	outsMap := make(map[string]*TXOutputs)
 	// 找到需要删除的数据
 	for _, tx := range block.Txs {
-		ins = append(ins, tx.Vins...)
+		for _, in := range tx.Vins {
+			ins = append(ins, in)
+		}
 	}
 	for _, tx := range block.Txs {
 		utxos := []*UTXO{}
@@ -203,7 +205,8 @@ func (us *UTXOSet) Update() {
 
 			}
 			if !isSpent {
-				utxos = append(utxos, &UTXO{tx.TxHash, index, out})
+				utxo := &UTXO{tx.TxHash, index, out}
+				utxos = append(utxos, utxo)
 			}
 		}
 
@@ -214,6 +217,7 @@ func (us *UTXOSet) Update() {
 	}
 	err := us.BlockChain.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(utxoTableName))
+
 		if b != nil {
 			// 删除
 			for _, in := range ins {
@@ -242,7 +246,7 @@ func (us *UTXOSet) Update() {
 				}
 			}
 
-			// 更新
+			// 新增
 			for keyHash, outPuts := range outsMap {
 				keyHashBytes, _ := hex.DecodeString(keyHash)
 				b.Put(keyHashBytes, outPuts.Serialize())

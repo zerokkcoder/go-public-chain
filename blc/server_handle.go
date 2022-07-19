@@ -3,6 +3,7 @@ package blc
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"log"
 )
 
@@ -40,7 +41,36 @@ func handleAddr(request []byte, bc *BlockChain) {
 
 }
 func handleBlock(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload BlockData
 
+	dataBytes := request[COMMANDLENGTH:]
+
+	// 反序列化
+	buff.Write(dataBytes)
+	dec := gob.NewDecoder(&buff)
+	err := dec.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	blockBytes := payload.Block
+
+	block := DeserializeBlock(blockBytes)
+
+	fmt.Println("Recevied a new block!")
+	bc.AddBlock(block)
+
+	fmt.Printf("Added block %x\n", block.Hash)
+
+	if len(transactionArray) > 0 {
+		sendGetData(payload.AddrFrom, BLOCK_TYPE, transactionArray[0])
+		transactionArray = transactionArray[1:]
+	} else {
+		fmt.Println("重置数据库...")
+		utxoSet := UTXOSet{bc}
+		utxoSet.ResetUTXOSet()
+	}
 }
 func handleGetblocks(request []byte, bc *BlockChain) {
 	var buff bytes.Buffer
@@ -89,10 +119,6 @@ func handleGetData(request []byte, bc *BlockChain) {
 	}
 }
 func handleInv(request []byte, bc *BlockChain) {
-
-}
-
-func handleTx(request []byte, bc *BlockChain) {
 	var buff bytes.Buffer
 	var payload Inv
 
@@ -109,13 +135,19 @@ func handleTx(request []byte, bc *BlockChain) {
 	// Ivn 3000 block hashes [][]
 
 	if payload.Type == BLOCK_TYPE {
-
+		//payload.Items
 		blockHash := payload.Items[0]
 		sendGetData(payload.AddrFrom, BLOCK_TYPE, blockHash)
-
+		if len(payload.Items) >= 1 {
+			transactionArray = payload.Items[1:]
+		}
 	}
 
 	if payload.Type == TX_TYPE {
 
 	}
+}
+
+func handleTx(request []byte, bc *BlockChain) {
+
 }

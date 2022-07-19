@@ -14,6 +14,7 @@ func sendVersion(toAddress string, bc *BlockChain) {
 	bestHeight := bc.GetBestHeight()
 	payload := gobEncode(Version{NODE_VERSION, bestHeight, nodeAddress})
 
+	// version
 	request := append(commandToBytes(COMMAND_VERSION), payload...)
 
 	sendData(toAddress, request)
@@ -50,7 +51,7 @@ func sendGetData(toAddress string, kind string, blockHash []byte) {
 	sendData(toAddress, request)
 }
 
-func sendBlock(toAddress string, block *Block) {
+func sendBlock(toAddress string, block []byte) {
 
 	payload := gobEncode(BlockData{nodeAddress, block})
 

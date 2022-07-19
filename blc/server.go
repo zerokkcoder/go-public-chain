@@ -7,9 +7,7 @@ import (
 	"net"
 )
 
-//localhost:3000 主节点的地址
-var knowNodes = []string{"localhost:3000"}
-var nodeAddress string //全局变量，节点地址
+
 
 // 启动服务器
 func startServer(nodeID string, minerAdd string) {

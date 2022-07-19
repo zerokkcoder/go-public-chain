@@ -30,7 +30,7 @@ func (cli *CLI) Run() {
 	// export NODE_ID=3000
 	// 读取
 	//nodeID := os.Getenv("NODE_ID")
-	nodeID := "3001" // window 下使用固定
+	nodeID := "3000" // window 下使用固定
 	if nodeID == "" {
 		fmt.Printf("NODE_ID env. var is not set!\n")
 		os.Exit(1)

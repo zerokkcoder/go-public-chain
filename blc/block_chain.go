@@ -557,9 +557,9 @@ func (bc *BlockChain) GetBlockHashes() [][]byte {
 	return blockHashs
 }
 
-func (bc *BlockChain) GetBlock(blockHash []byte) (*Block, error) {
+func (bc *BlockChain) GetBlock(blockHash []byte) ([]byte, error) {
 
-	var block *Block
+	var blockBytes []byte
 
 	err := bc.DB.View(func(tx *bolt.Tx) error {
 
@@ -567,14 +567,53 @@ func (bc *BlockChain) GetBlock(blockHash []byte) (*Block, error) {
 
 		if b != nil {
 
-			blockBytes := b.Get(blockHash)
-
-			block = DeserializeBlock(blockBytes)
+			blockBytes = b.Get(blockHash)
 
 		}
 
 		return nil
 	})
 
-	return block, err
+	return blockBytes, err
+}
+
+func (bc *BlockChain) AddBlock(block *Block) error {
+
+	err := bc.DB.Update(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte(blockTableName))
+
+		if b != nil {
+
+			blockExist := b.Get(block.Hash)
+
+			if blockExist != nil {
+				// 如果存在，不需要做任何过多的处理
+				return nil
+			}
+
+			err := b.Put(block.Hash, block.Serialize())
+
+			if err != nil {
+				log.Panic(err)
+			}
+
+			// 最新的区块链的Hash
+			blockHash := b.Get([]byte("tip"))
+
+			blockBytes := b.Get(blockHash)
+
+			blockInDB := DeserializeBlock(blockBytes)
+
+			if blockInDB.Height < block.Height {
+
+				b.Put([]byte("tip"), block.Hash)
+				bc.Tip = block.Hash
+			}
+		}
+
+		return nil
+	})
+
+	return err
 }
