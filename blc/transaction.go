@@ -49,9 +49,9 @@ func NewCoinbaseTransaction(address string) *Transaction {
 }
 
 // 2. 转账时产生的 Transaction
-func NewSimpleTransaction(from string, to string, amount int64, utxoSet *UTXOSet, txs []*Transaction) *Transaction {
+func NewSimpleTransaction(from string, to string, amount int64, utxoSet *UTXOSet, txs []*Transaction, nodeID string) *Transaction {
 	// 获取钱包
-	wallets, _ := NewWallets()
+	wallets, _ := NewWallets(nodeID)
 	wallet := wallets.GetWallet(from)
 
 	// 查找可用的UTXO

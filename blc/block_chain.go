@@ -14,8 +14,8 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const dbName = "blockchain.db"  // 数据库名字
-const blockTableName = "blocks" // 表名
+const dbName = "blockchain_%s.db" // 数据库名字
+const blockTableName = "blocks"   // 表名
 
 type BlockChain struct {
 	Tip []byte   // 最新区块的hash
@@ -23,9 +23,12 @@ type BlockChain struct {
 }
 
 // 1. 创建带有创世区块的区块链
-func CreateBlockChainWithGenesisBlock(address string) *BlockChain {
+func CreateBlockChainWithGenesisBlock(address string, nodeID string) *BlockChain {
+	// 格式化数据库名字
+	dbName := fmt.Sprintf(dbName, nodeID)
+
 	// 判断数据库是否存在
-	if DBExists() {
+	if DBExists(dbName) {
 		fmt.Println("创世区块已经存在...")
 		os.Exit(1)
 	}
@@ -223,7 +226,7 @@ func (bc *BlockChain) FindSpendableUTXOs(from string, amount int, txs []*Transac
 }
 
 // 挖掘新的区块
-func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) {
+func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string, nodeID string) {
 	// $ go run .\main.go send -from '[\"huanggz\"]' -to '[\"lisi\"]' -amount '[\"6\"]'
 	// [huanggz]
 	// [lisi]
@@ -234,7 +237,7 @@ func (bc *BlockChain) MineNewBlock(from []string, to []string, amount []string) 
 	var txs []*Transaction
 	for index, address := range from {
 		value, _ := strconv.Atoi(amount[index])
-		tx := NewSimpleTransaction(address, to[index], int64(value), utxoSet, txs)
+		tx := NewSimpleTransaction(address, to[index], int64(value), utxoSet, txs, nodeID)
 		txs = append(txs, tx)
 	}
 
@@ -321,7 +324,7 @@ func (bc *BlockChain) Iterator() *BlockChainIterator {
 }
 
 // 判断数据库是否存在
-func DBExists() bool {
+func DBExists(dbName string) bool {
 	if _, err := os.Stat(dbName); os.IsNotExist(err) {
 		return false
 	}
@@ -367,7 +370,16 @@ func (bc *BlockChain) PrintChain() {
 }
 
 // 返回 BlockChain 对象
-func BlockChainObject() *BlockChain {
+func BlockChainObject(nodeID string) *BlockChain {
+	// 格式化数据库
+	dbName := fmt.Sprintf(dbName, nodeID)
+
+	// 判断数据库是否存在
+	if !DBExists(dbName) {
+		fmt.Println("数据库不存在...")
+		os.Exit(1)
+	}
+
 	// 创建或打开数据库
 	db, err := bolt.Open(dbName, 0600, nil)
 	if err != nil {

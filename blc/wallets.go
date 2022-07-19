@@ -10,32 +10,45 @@ import (
 	"os"
 )
 
-const walletFile = "wallets.dat"
+const walletFile = "wallets_%s.dat"
 
 type Wallets struct {
 	Wallets map[string]*Wallet
 }
 
 // 创建钱包集合
-func NewWallets() (*Wallets, error) {
-	wallets := Wallets{}
-	wallets.Wallets = make(map[string]*Wallet)
+func NewWallets(nodeID string) (*Wallets, error) {
+	walletFile := fmt.Sprintf(walletFile, nodeID)
 
-	err := wallets.LoadFromFile()
+	if _, err := os.Stat(walletFile); os.IsNotExist(err) {
+		wallets := &Wallets{}
+		wallets.Wallets = make(map[string]*Wallet)
+		return wallets, err
+	}
 
-	return &wallets, err
+	fileContent, err := ioutil.ReadFile(walletFile)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	var wallets Wallets
+	gob.Register(elliptic.P256())
+	decoder := gob.NewDecoder(bytes.NewReader(fileContent))
+	err = decoder.Decode(&wallets)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &wallets, nil
 }
 
 // 创建一个新钱包
-func (w Wallets) CreateNewWallet() string {
+func (w Wallets) CreateNewWallet(nodeID string) string {
 	wallet := NewWallet()
-	address := fmt.Sprintf("%s", wallet.GetAddress())
+	w.Wallets[string(wallet.GetAddress())] = wallet
+	w.SaveToFile(nodeID)
 
-	w.Wallets[address] = wallet
-
-	w.SaveToFile()
-
-	return address
+	return string(wallet.GetAddress())
 }
 
 // 获取所有的钱包信息
@@ -79,10 +92,13 @@ func (w *Wallets) LoadFromFile() error {
 }
 
 // 把 wallets 信息保存到一个文件中
-func (w Wallets) SaveToFile() {
+func (w Wallets) SaveToFile(nodeID string) {
+
+	walletFile := fmt.Sprintf(walletFile, nodeID)
+
 	var content bytes.Buffer
 
-	// 注册是为了可以序列化任何类型
+	// 注册的目的，是为了，可以序列化任何类型
 	gob.Register(elliptic.P256())
 
 	encoder := gob.NewEncoder(&content)
@@ -91,7 +107,7 @@ func (w Wallets) SaveToFile() {
 		log.Panic(err)
 	}
 
-	// 将序列化后的数据写入文件，原文件的数据会被覆盖
+	// 将序列化以后的数据写入到文件，原来文件的数据会被覆盖
 	err = ioutil.WriteFile(walletFile, content.Bytes(), 0644)
 	if err != nil {
 		log.Panic(err)

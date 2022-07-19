@@ -1,19 +1,11 @@
 package blc
 
-import (
-	"fmt"
-	"os"
-)
-
 // 转账
-func (cli *CLI) send(from []string, to []string, amount []string) {
-	if !DBExists() {
-		fmt.Println("数据库不存在.......")
-		os.Exit(1)
-	}
-	blockChain := BlockChainObject()
+func (cli *CLI) send(from []string, to []string, amount []string, nodeID string) {
+
+	blockChain := BlockChainObject(nodeID)
 	defer blockChain.DB.Close()
-	blockChain.MineNewBlock(from, to, amount)
+	blockChain.MineNewBlock(from, to, amount, nodeID)
 
 	utxoSet := &UTXOSet{blockChain}
 	// 转账成功以后，更新未花费表

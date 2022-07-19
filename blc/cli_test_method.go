@@ -1,8 +1,8 @@
 package blc
 
-func (cli *CLI) TestMethod() {
+func (cli *CLI) TestMethod(nodeID string) {
 
-	blockChain := BlockChainObject()
+	blockChain := BlockChainObject(nodeID)
 	defer blockChain.DB.Close()
 
 	utxoSet := &UTXOSet{blockChain}

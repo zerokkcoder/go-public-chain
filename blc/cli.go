@@ -92,12 +92,12 @@ func (cli *CLI) Run() {
 	}
 	if addressListCmd.Parsed() {
 		// 输出所有钱包地址
-		cli.addressList()
+		cli.addressList(nodeID)
 	}
 
 	if createWalletCmd.Parsed() {
 		// 创建钱包
-		cli.createWallet()
+		cli.createWallet(nodeID)
 	}
 
 	if sendBlockCmd.Parsed() {
@@ -119,11 +119,11 @@ func (cli *CLI) Run() {
 
 		amount := utils.JSONToArray(*flagAmount)
 
-		cli.send(from, to, amount)
+		cli.send(from, to, amount,nodeID)
 	}
 
 	if printChainCmd.Parsed() {
-		cli.printChain()
+		cli.printChain(nodeID)
 	}
 
 	if createGenesisBlockCmd.Parsed() {
@@ -132,7 +132,7 @@ func (cli *CLI) Run() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.createGenesisBlockChain(*flagCreateGenesisBlockAddress)
+		cli.createGenesisBlockChain(*flagCreateGenesisBlockAddress, nodeID)
 	}
 
 	if getBalanceCmd.Parsed() {
@@ -141,10 +141,10 @@ func (cli *CLI) Run() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.getBalance(*getBalanceWithAddress)
+		cli.getBalance(*getBalanceWithAddress, nodeID)
 	}
 	if testCmd.Parsed() {
-		cli.TestMethod()
+		cli.TestMethod(nodeID)
 	}
 }
 
