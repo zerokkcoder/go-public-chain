@@ -2,7 +2,6 @@ package blc
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -72,13 +71,21 @@ func DeserializeBlock(blockBytes []byte) *Block {
 
 // 将 Txs 转化成 字节数组
 func (b *Block) HashTransactions() []byte {
-	var txHashes [][]byte
-	var txHash [32]byte
+	// 原始方式:
+	// var txHashes [][]byte
+	// var txHash [32]byte
+	// for _, tx := range b.Txs {
+	// 	txHashes = append(txHashes, tx.TxHash)
+	// }
+	// txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+	// return txHash[:]
 
+	// 默克尔树（MerkleTree）方式:
+	var transactions [][]byte
 	for _, tx := range b.Txs {
-		txHashes = append(txHashes, tx.TxHash)
+		transactions = append(transactions, tx.Serialize())
 	}
-	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+	mTree := NewMerkleTree(transactions)
 
-	return txHash[:]
+	return mTree.RootNode.Data
 }

@@ -10,3 +10,5 @@
 ## 参考资料
 - [Blockchain](https://www.blockchain.com/) 可以下载钱包，查看交易（包括比特币，以太坊等）。
 - [区块链指南](https://github.com/liuchengxu/blockchain-tutorial) 由 [liuchengxu](https://github.com/liuchengxu) 维护的一个阅读列表: Opinioned Blockchain Reading List, 整理一些值得阅读研究的资源，大部分是英文的，部分有中文资源。
+- [MEW](https://www.myetherwallet.com/) myetherwallet.com
+- [Remix](https://remix.ethereum.org/) 智能合约编辑器
