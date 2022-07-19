@@ -18,7 +18,7 @@ func startServer(nodeID string, minerAdd string) {
 	// 当前节点的IP地址
 	nodeAddress := fmt.Sprintf("localhost:%s", nodeID)
 
-	conn, err := net.Listen("tcp", nodeAddress)
+	conn, err := net.Listen(PROTOCOL, nodeAddress)
 	if err != nil {
 		log.Panic(err)
 	}
