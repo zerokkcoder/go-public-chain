@@ -12,3 +12,4 @@
 - [区块链指南](https://github.com/liuchengxu/blockchain-tutorial) 由 [liuchengxu](https://github.com/liuchengxu) 维护的一个阅读列表: Opinioned Blockchain Reading List, 整理一些值得阅读研究的资源，大部分是英文的，部分有中文资源。
 - [MEW](https://www.myetherwallet.com/) myetherwallet.com
 - [Remix](https://remix.ethereum.org/) 智能合约编辑器
+- [Building Blockchain in Go](https://jeiwan.net/)
